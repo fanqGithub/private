@@ -45,7 +45,7 @@ public class MediaUtil {
 
     public static List<VideoItem> scanVideos(Context context){
         List<VideoItem> videoItemLis=new ArrayList<>();
-        Cursor cursor =context.getContentResolver().query(MediaStore.Video.Media.EXTERNAL_CONTENT_URI,null,null,null, null);
+        Cursor cursor =context.getContentResolver().query(MediaStore.Video.Media.EXTERNAL_CONTENT_URI,null,null,null, MediaStore.MediaColumns.DATE_MODIFIED + " DESC");
         if (cursor!=null){
             while (cursor.moveToNext()){
                 VideoItem videoBean = new VideoItem();
@@ -53,6 +53,7 @@ public class MediaUtil {
                 videoBean.setPath(cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DATA)));
                 videoBean.setDuration(cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DURATION)));
                 videoBean.setSize(cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.SIZE)));
+                videoBean.setThumbImgPath(cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Video.Thumbnails.DATA)));
                 videoItemLis.add(videoBean);
             }
         }

@@ -14,6 +14,8 @@ public class VideoItem {
     private int duration;
     private long size;
 
+    private String thumbImgPath;
+
 
     public String getName() {
         return name;
@@ -45,5 +47,18 @@ public class VideoItem {
 
     public void setSize(long size) {
         this.size = size;
+    }
+
+    public String getThumbImgPath() {
+        return thumbImgPath;
+    }
+
+    public void setThumbImgPath(String thumbImgPath) {
+        this.thumbImgPath = thumbImgPath;
+    }
+
+    @Override
+    public String toString() {
+        return  "[Video name="+name+" ; path="+path+" size="+size+" thumb="+thumbImgPath+" ]";
     }
 }

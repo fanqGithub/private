@@ -3,6 +3,6 @@
     <string-array name="app_array">
         <item>音乐</item>
         <item>视频</item>
-        <item>我的列表</item>
+        <item>播放列表</item>
     </string-array>
 </resources>

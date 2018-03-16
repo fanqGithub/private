@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/white"
+    android:paddingBottom="10dp"
+    android:layout_margin="10dp">
+    <ImageView
+        android:id="@+id/video_img"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:src="@mipmap/ic_music_default"/>
+    <TextView
+        android:id="@+id/video_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:singleLine="true"
+        android:ellipsize="end"
+        android:text="视频名称"
+        android:gravity="center"/>
+    <TextView
+        android:id="@+id/video_info"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:singleLine="true"
+        android:ellipsize="end"
+        android:text="时长：00:50  大小：50M"
+        android:gravity="center"/>
+
+</LinearLayout>
