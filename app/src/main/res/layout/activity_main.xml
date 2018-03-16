@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.commai.commaplayer.MainActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:orientation="horizontal"
+        android:background="@color/colorblue"
+        android:gravity="center">
+        <com.commai.commaplayer.widget.SegmentControl
+            android:id="@+id/segment"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:scv_BackgroundSelectedColor="@color/white"
+            app:scv_BackgroundNormalColor="@color/colorblue"
+            app:scv_FrameColor="@color/colorblue"
+            app:scv_FrameCornerRadius="6dp"
+            app:scv_FrameWidth="1dp"
+            app:scv_Gradient="true"
+            app:scv_SegmentPaddingVertical="5dp"
+            app:scv_TextArray="@array/app_array"
+            app:scv_TextNormalColor="@color/white"
+            app:scv_TextSelectedColor="@color/colorblue"/>
+    </LinearLayout>
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/mediaList"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+    </android.support.v7.widget.RecyclerView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="60dp">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="播放中的内容区域"/>
+    </LinearLayout>
+
+
+</LinearLayout>
