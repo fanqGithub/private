@@ -25,7 +25,6 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-
     private SegmentControl segment_ct;
     private LocalMusicFragment musicFragment=null;
     private LocalVideoFragment videoFragment=null;
