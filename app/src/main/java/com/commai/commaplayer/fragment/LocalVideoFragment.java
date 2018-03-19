@@ -1,5 +1,7 @@
 package com.commai.commaplayer.fragment;
 
+import android.Manifest;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -15,10 +17,13 @@ import android.widget.LinearLayout;
 import com.commai.commaplayer.Entity.AudioItem;
 import com.commai.commaplayer.Entity.VideoItem;
 import com.commai.commaplayer.R;
+import com.commai.commaplayer.activity.PlayerActivity;
 import com.commai.commaplayer.adapter.MusicItemAdapter;
 import com.commai.commaplayer.adapter.VideoItemAdapter;
 import com.commai.commaplayer.base.BaseFragment;
+import com.commai.commaplayer.listener.ClickItemTouchListener;
 import com.commai.commaplayer.utils.MediaUtil;
+import com.commai.commaplayer.utils.PermissionUtil;
 
 import java.util.List;
 
@@ -47,19 +52,53 @@ public class LocalVideoFragment extends BaseFragment {
         manager.setOrientation(LinearLayout.VERTICAL);
         mediaListView.setLayoutManager(manager);
         mediaListView.setItemAnimator(new DefaultItemAnimator());
+        mediaListView.addOnItemTouchListener(new ClickItemTouchListener(mediaListView) {
+            @Override
+            public boolean onClick(RecyclerView parent, View view, int position, long id) {
+                if (position >= 0) {
+                    Intent intent=new Intent(getContext(), PlayerActivity.class);
+                    intent.putExtra("mediaPath",videoItemList.get(position).getPath());
+                    startActivity(intent);
+                }
+                return true;
+            }
+
+            @Override
+            public boolean onLongClick(RecyclerView parent, View view, int position, long id) {
+                return true;
+            }
+
+            @Override
+            public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
+
+            }
+        });
         initData();
         return view;
     }
 
     private void initData(){
-        videoItemList= MediaUtil.scanVideos(getContext());
-        for (VideoItem item:videoItemList){
-            Log.d("TAG_Video",item.toString());
-        }
+        PermissionUtil.requestPermissionsResult(this, 1, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}
+                , new PermissionUtil.OnPermissionListener() {
 
-        if (videoItemList!=null){
-            adapter=new VideoItemAdapter(getContext(),videoItemList);
-            mediaListView.setAdapter(adapter);
-        }
+                    @Override
+                    public void onPermissionGranted() {
+                        videoItemList= MediaUtil.scanVideos(getContext());
+                        for (VideoItem item:videoItemList){
+                            Log.d("TAG_Video",item.toString());
+                        }
+
+                        if (videoItemList!=null){
+                            adapter=new VideoItemAdapter(getContext(),videoItemList);
+                            mediaListView.setAdapter(adapter);
+                        }
+                    }
+
+                    @Override
+                    public void onPermissionDenied() {
+                        PermissionUtil.showTipsDialog(getContext());
+                    }
+                });
+
     }
 }
