@@ -16,6 +16,7 @@ import android.widget.LinearLayout;
 
 import com.commai.commaplayer.Entity.AudioItem;
 import com.commai.commaplayer.Entity.VideoItem;
+import com.commai.commaplayer.MainActivity;
 import com.commai.commaplayer.R;
 import com.commai.commaplayer.activity.PlayerActivity;
 import com.commai.commaplayer.adapter.MusicItemAdapter;
@@ -35,7 +36,6 @@ import java.util.List;
 public class LocalVideoFragment extends BaseFragment {
 
     private RecyclerView mediaListView=null;
-    private List<VideoItem> videoItemList=null;
     private VideoItemAdapter adapter=null;
 
     @Override
@@ -57,7 +57,7 @@ public class LocalVideoFragment extends BaseFragment {
             public boolean onClick(RecyclerView parent, View view, int position, long id) {
                 if (position >= 0) {
                     Intent intent=new Intent(getContext(), PlayerActivity.class);
-                    intent.putExtra("mediaPath",videoItemList.get(position).getPath());
+                    intent.putExtra("mediaPath",MainActivity.videoItemList.get(position).getPath());
                     startActivity(intent);
                 }
                 return true;
@@ -78,27 +78,9 @@ public class LocalVideoFragment extends BaseFragment {
     }
 
     private void initData(){
-        PermissionUtil.requestPermissionsResult(this, 1, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}
-                , new PermissionUtil.OnPermissionListener() {
-
-                    @Override
-                    public void onPermissionGranted() {
-                        videoItemList= MediaUtil.scanVideos(getContext());
-                        for (VideoItem item:videoItemList){
-                            Log.d("TAG_Video",item.toString());
-                        }
-
-                        if (videoItemList!=null){
-                            adapter=new VideoItemAdapter(getContext(),videoItemList);
-                            mediaListView.setAdapter(adapter);
-                        }
-                    }
-
-                    @Override
-                    public void onPermissionDenied() {
-                        PermissionUtil.showTipsDialog(getContext());
-                    }
-                });
-
+        if (MainActivity.videoItemList!=null){
+            adapter=new VideoItemAdapter(getContext(),MainActivity.videoItemList);
+            mediaListView.setAdapter(adapter);
+        }
     }
 }

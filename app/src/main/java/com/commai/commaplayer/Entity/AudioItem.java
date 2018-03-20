@@ -17,6 +17,18 @@ public class AudioItem {
     private int duration;
     private long size;
 
+    public int getAlbum_id() {
+        return album_id;
+    }
+
+    public void setAlbum_id(int album_id) {
+        this.album_id = album_id;
+    }
+
+    private int album_id;
+
+    private String title;
+
 
     public String getName() {
         return name;
@@ -58,8 +70,16 @@ public class AudioItem {
         this.size = size;
     }
 
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
     @Override
     public String toString() {
-        return "[Audio name="+name+" ; path="+path+" artist="+artist+" ]";
+        return "[Audio name="+name+" ; path="+path+" artist="+artist+" albumid"+album_id +" title"+title+" ]";
     }
 }

@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
 import com.commai.commaplayer.Entity.AudioItem;
+import com.commai.commaplayer.MainActivity;
 import com.commai.commaplayer.R;
 import com.commai.commaplayer.activity.PlayerActivity;
 import com.commai.commaplayer.adapter.MusicItemAdapter;
@@ -33,8 +34,9 @@ import java.util.List;
 public class LocalMusicFragment extends BaseFragment {
 
     private RecyclerView mediaListView=null;
-    private List<AudioItem> audioItemList=null;
+//    private List<AudioItem> audioItemList=null;
     private MusicItemAdapter adapter=null;
+    private onMusicClickCallBackListener musicClickListener=null;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -55,9 +57,12 @@ public class LocalMusicFragment extends BaseFragment {
             @Override
             public boolean onClick(RecyclerView parent, View view, int position, long id) {
                 if (position >= 0) {
-                    Intent intent=new Intent(getContext(), PlayerActivity.class);
-                    intent.putExtra("mediaPath",audioItemList.get(position).getPath());
-                    startActivity(intent);
+//                    Intent intent=new Intent(getContext(), PlayerActivity.class);
+//                    intent.putExtra("mediaPath",audioItemList.get(position).getPath());
+//                    startActivity(intent);
+                    if (musicClickListener!=null){
+                        musicClickListener.onMusicClickCallBack(position);
+                    }
                 }
                 return true;
             }
@@ -78,27 +83,18 @@ public class LocalMusicFragment extends BaseFragment {
 
 
     private void initData(){
-        PermissionUtil.requestPermissionsResult(this, 1, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}
-                , new PermissionUtil.OnPermissionListener() {
-                    @Override
-                    public void onPermissionGranted() {
-                        audioItemList= MediaUtil.scanAudios(getContext());
-                        for (AudioItem item:audioItemList){
-                            Log.d("TAG_MUSICS",item.toString());
-                        }
+        if (MainActivity.audioItemList!=null){
+            adapter=new MusicItemAdapter(getContext(),MainActivity.audioItemList);
+            mediaListView.setAdapter(adapter);
+        }
 
-                        if (audioItemList!=null){
-                            adapter=new MusicItemAdapter(getContext(),audioItemList);
-                            mediaListView.setAdapter(adapter);
-                        }
-                    }
+    }
 
-                    @Override
-                    public void onPermissionDenied() {
-                        PermissionUtil.showTipsDialog(getContext());
-                    }
-                });
+    public interface onMusicClickCallBackListener{
+        void onMusicClickCallBack(int position);
+    }
 
-
+    public void setOnMusicClickCallBackListener(onMusicClickCallBackListener listener){
+        this.musicClickListener=listener;
     }
 }
