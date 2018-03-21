@@ -28,6 +28,10 @@
             </intent-filter>
         </activity>
         <activity android:name=".activity.PlayerActivity" />
+
+        <service
+            android:name=".service.MediaPlayerService"
+            android:stopWithTask="false" />
     </application>
 
 </manifest>

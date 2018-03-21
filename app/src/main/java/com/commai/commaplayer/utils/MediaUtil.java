@@ -9,9 +9,12 @@ import android.net.Uri;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.util.Pair;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 
 import com.commai.commaplayer.Entity.AudioItem;
 import com.commai.commaplayer.Entity.VideoItem;
+import com.commai.commaplayer.MainActivity;
 import com.commai.commaplayer.R;
 
 import java.util.ArrayList;
@@ -112,5 +115,13 @@ public class MediaUtil {
         }
         Pair<String, String> pair = Pair.create(minS, secS);
         return pair;
+    }
+
+    public static void hideKeyboard(Context ctx) {
+        View view = ((MainActivity) ctx).getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager) ctx.getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
     }
 }

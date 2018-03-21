@@ -71,17 +71,13 @@ public class PlayerFragment extends Fragment implements AudioPlayerBroadcastRece
 
     TextView currTime, totalTime;
 
-    public ImageView repeatController;
-    public ImageView shuffleController;
+    //中间的圆图
+    public ImageView playing_music_img;
+    public TextView playging_music_title;
 
-    public ImageView equalizerIcon;
     public ImageView mainTrackController;
     public ImageView nextTrackController;
     public ImageView previousTrackController;
-    public ImageView favouriteIcon;
-    public ImageView queueIcon;
-
-    public ImageView saveDNAToggle;
 
     boolean isFav = false;
 
@@ -89,10 +85,11 @@ public class PlayerFragment extends Fragment implements AudioPlayerBroadcastRece
     public RelativeLayout seekBarContainer;
     public RelativeLayout toggleContainer;
 
-    public ImageView playing_music_img;
-    public TextView music_title;
-    public TextView selected_track_artist;
-    public ImageView player_controller;
+    //缩小的播放器部分
+    public ImageView small_playing_music_img;
+    public TextView small_music_title;
+    public TextView small_artist;
+    public ImageView small_player_controller;
 
     public RelativeLayout smallPlayer;
 
@@ -101,7 +98,7 @@ public class PlayerFragment extends Fragment implements AudioPlayerBroadcastRece
     public SeekBar progressBar;
 
     public static int durationInMilliSec;
-    static boolean completed = false;
+    public static boolean completed = false;
     public boolean pauseClicked = false;
     boolean isTracking = false;
 
@@ -118,6 +115,8 @@ public class PlayerFragment extends Fragment implements AudioPlayerBroadcastRece
 
     public Timer timer;
 
+    private ImageView img_back;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -126,18 +125,39 @@ public class PlayerFragment extends Fragment implements AudioPlayerBroadcastRece
         progressBar = (SeekBar) view.findViewById(R.id.progressBar);
         currTime = (TextView) view.findViewById(R.id.currTime);
         totalTime=view.findViewById(R.id.totalTime);
-        music_title=view.findViewById(R.id.music_title);
-        player_controller=view.findViewById(R.id.controller);
-        player_controller.setOnClickListener(this);
+        playging_music_title=view.findViewById(R.id.music_title);
+        playging_music_title.setSelected(true);
+        mainTrackController=view.findViewById(R.id.controller);
+        img_back=view.findViewById(R.id.img_back);
+
+        smallPlayer = (RelativeLayout) view.findViewById(R.id.smallPlayer);
+
+
+        mainTrackController.setOnClickListener(this);
+        img_back.setOnClickListener(this);
         imageLoader=new ImageLoader(getContext());
         Log.d("Current",MainActivity.currentPlayingMusic.getPath());
         initMediaPlayer();
+
+        smallPlayer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mCallback.onSmallPlayerTouched();
+            }
+        });
         return view;
     }
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+        homeActivity= (MainActivity) context;
+        try {
+            mCallback = (PlayerFragmentCallbackListener) context;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(context.toString()
+                    + " must implement OnHeadlineSelectedListener");
+        }
         mMediaPlayer = new MediaPlayer();
     }
 
@@ -147,7 +167,145 @@ public class PlayerFragment extends Fragment implements AudioPlayerBroadcastRece
         progressBar.setMax(durationInMilliSec);
         temp = MediaUtil.getTime(durationInMilliSec);
         totalTime.setText(temp.first + ":" + temp.second);
-        music_title.setText(MainActivity.currentPlayingMusic.getTitle());
+        playging_music_title.setText(MainActivity.currentPlayingMusic.getTitle());
+        timer = new Timer();
+        timer.scheduleAtFixedRate(
+                new TimerTask() {
+                    @Override
+                    public void run() {
+//                        if (isPrepared && !isTracking && getActivity() != null) {
+                            getActivity().runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    float[] hsv = new float[3];
+                                    hsv[0] = (float) 0.5;
+                                    hsv[1] = (float) 0.8;
+                                    hsv[2] = (float) 0.5;
+                                    progressBar.getProgressDrawable().setColorFilter(new PorterDuffColorFilter(Color.HSVToColor(hsv), PorterDuff.Mode.SRC_IN));
+                                }
+                            });
+                            try {
+                                temp = MediaUtil.getTime(mMediaPlayer.getCurrentPosition());
+                                getActivity().runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        currTime.setText(temp.first + ":" + temp.second);
+                                    }
+                                });
+                                progressBar.setProgress(mMediaPlayer.getCurrentPosition());
+                            } catch (Exception e) {
+                                Log.e("MEDIA", e.getMessage() + ":");
+                            }
+                        }
+//                    }
+                }, 0, 50);
+
+        progressBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                temp = MediaUtil.getTime(progress);
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        currTime.setText(temp.first + ":" + temp.second);
+                    }
+                });
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                startTrack = System.currentTimeMillis();
+                isTracking = true;
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                endTrack = System.currentTimeMillis();
+                mMediaPlayer.seekTo(seekBar.getProgress());
+                if (mMediaPlayer.isPlaying()) {
+                    mMediaPlayer.start();
+                }
+                isTracking = false;
+            }
+
+        });
+        mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                completed=true;
+            }
+        });
+        mMediaPlayer.setOnBufferingUpdateListener(new MediaPlayer.OnBufferingUpdateListener() {
+            @Override
+            public void onBufferingUpdate(MediaPlayer mp, int percent) {
+                double ratio = percent / 100.0;
+                double bufferingLevel = (int) (mp.getDuration() * ratio);
+                if (progressBar != null) {
+                    progressBar.setSecondaryProgress((int) bufferingLevel);
+                }
+            }
+        });
+
+        mMediaPlayer.setOnErrorListener(
+                new MediaPlayer.OnErrorListener() {
+                    @Override
+                    public boolean onError(MediaPlayer mp, int what, int extra) {
+                        return true;
+                    }
+                }
+        );
+        mMediaPlayer.setOnInfoListener(new MediaPlayer.OnInfoListener() {
+            @Override
+            public boolean onInfo(MediaPlayer mp, int what, int extra) {
+                switch (what) {
+                    case MediaPlayer.MEDIA_INFO_BUFFERING_START:
+                        isPrepared = false;
+                        break;
+                    case MediaPlayer.MEDIA_INFO_BUFFERING_END:
+                        isPrepared = true;
+                        break;
+                    default:
+                        break;
+                }
+                return true;
+            }
+        });
+        imageLoader.DisplayImage(MainActivity.currentPlayingMusic.getPath(),playing_music_img);
+        try {
+            mMediaPlayer.setDataSource(MainActivity.currentPlayingMusic.getPath());
+            //设置为循环播放
+            mMediaPlayer.setLooping(true);
+            mMediaPlayer.prepare();
+            if (!mMediaPlayer.isPlaying()) {
+                mMediaPlayer.start();
+                mainTrackController.setImageResource(R.drawable.ic_pause_white_48dp);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void refresh() {
+        isRefreshed = true;
+        pauseClicked = false;
+        completed = false;
+        isTracking = false;
+
+        if (homeActivity.isPlayerVisible) {
+            mainTrackController.setVisibility(View.VISIBLE);
+            mainTrackController.setImageResource(R.drawable.ic_pause_white_48dp);
+        } else {
+            mainTrackController.setVisibility(View.VISIBLE);
+            mainTrackController.setImageResource(R.drawable.ic_pause_white_48dp);
+        }
+
+        isFav = false;
+
+        temp = MediaUtil.getTime(durationInMilliSec);
+        totalTime.setText(temp.first + ":" + temp.second);
+        progressBar.setMax(durationInMilliSec);
+        timer.cancel();
         timer = new Timer();
         timer.scheduleAtFixedRate(
                 new TimerTask() {
@@ -210,44 +368,6 @@ public class PlayerFragment extends Fragment implements AudioPlayerBroadcastRece
             }
 
         });
-        mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mp) {
-                completed=true;
-            }
-        });
-        mMediaPlayer.setOnBufferingUpdateListener(new MediaPlayer.OnBufferingUpdateListener() {
-            @Override
-            public void onBufferingUpdate(MediaPlayer mp, int percent) {
-                double ratio = percent / 100.0;
-                double bufferingLevel = (int) (mp.getDuration() * ratio);
-                if (progressBar != null) {
-                    progressBar.setSecondaryProgress((int) bufferingLevel);
-                }
-            }
-        });
-
-        mMediaPlayer.setOnErrorListener(
-                new MediaPlayer.OnErrorListener() {
-                    @Override
-                    public boolean onError(MediaPlayer mp, int what, int extra) {
-                        return true;
-                    }
-                }
-        );
-        imageLoader.DisplayImage(MainActivity.currentPlayingMusic.getPath(),playing_music_img);
-        try {
-            mMediaPlayer.setDataSource(MainActivity.currentPlayingMusic.getPath());
-            //设置为循环播放
-            mMediaPlayer.setLooping(true);
-            mMediaPlayer.prepare();
-            if (!mMediaPlayer.isPlaying()) {
-                mMediaPlayer.start();
-                player_controller.setImageResource(R.drawable.ic_pause_white_48dp);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
 
@@ -282,13 +402,17 @@ public class PlayerFragment extends Fragment implements AudioPlayerBroadcastRece
             case R.id.controller:
                 if (mMediaPlayer.isPlaying()){
                     mMediaPlayer.pause();
-                    player_controller.setImageResource(R.drawable.ic_play_arrow_white_48dp);
+                    mainTrackController.setImageResource(R.drawable.ic_play_arrow_white_48dp);
                 }else {
                     if (!completed){
                         mMediaPlayer.start();
-                        player_controller.setImageResource(R.drawable.ic_pause_white_48dp);
+                        mainTrackController.setImageResource(R.drawable.ic_pause_white_48dp);
                     }
                 }
+                break;
+            case R.id.img_back:
+                homeActivity.hidePlayer();
+                homeActivity.isPlayerVisible = false;
                 break;
             default:
                 break;
@@ -334,12 +458,6 @@ public class PlayerFragment extends Fragment implements AudioPlayerBroadcastRece
     ImageView spImgAB;
     TextView spTitleAB;
     TextView spArtistAB;
-
-    TextView lyricsStatus;
-    public RelativeLayout lyricsContainer;
-    public ImageView lyricsIcon;
-    public TextView lyricsContent;
-    public boolean isLyricsVisisble = false;
 
     public boolean isStart = true;
 
