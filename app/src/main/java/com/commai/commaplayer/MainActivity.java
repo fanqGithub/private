@@ -2,48 +2,41 @@ package com.commai.commaplayer;
 
 import android.Manifest;
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.Build;
 import android.os.IBinder;
-import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
-import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.DefaultItemAnimator;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import com.bumptech.glide.Glide;
 import com.commai.commaplayer.Entity.AudioItem;
 import com.commai.commaplayer.Entity.VideoItem;
-import com.commai.commaplayer.adapter.MusicItemAdapter;
 import com.commai.commaplayer.fragment.LocalMusicFragment;
 import com.commai.commaplayer.fragment.LocalVideoFragment;
 import com.commai.commaplayer.fragment.PlayerFragment;
+import com.commai.commaplayer.fragment.PlayingFragment;
 import com.commai.commaplayer.fragment.SelfPlayListFragment;
-import com.commai.commaplayer.listener.ServiceCallBack;
-import com.commai.commaplayer.service.Constants;
-import com.commai.commaplayer.service.MediaPlayerService;
+import com.commai.commaplayer.service.MusicPlayService;
+import com.commai.commaplayer.service.MusicPlayer;
+import com.commai.commaplayer.service.OnPlayerEventListener;
 import com.commai.commaplayer.utils.MediaUtil;
 import com.commai.commaplayer.utils.PermissionUtil;
 import com.commai.commaplayer.utils.imageLoader.ImageLoader;
@@ -55,12 +48,9 @@ import java.util.List;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 import static android.view.View.GONE;
-import static com.commai.commaplayer.fragment.PlayerFragment.ctx;
 
 public class MainActivity extends AppCompatActivity implements
-        View.OnClickListener,
-        PlayerFragment.PlayerFragmentCallbackListener ,
-        PlayerFragment.onPlayPauseListener,ServiceCallBack{
+        View.OnClickListener,OnPlayerEventListener{
 
     private SegmentControl segment_ct;
     private LocalMusicFragment musicFragment=null;
@@ -71,29 +61,28 @@ public class MainActivity extends AppCompatActivity implements
 
     //底部播放控制相关
     public Toolbar spHomePlayerBar;
-    public ImageView playerControllerHome,playerNextMusic;
-    public FrameLayout bottomToolbar;
+    public ImageView playerControllerHome;
+    public ImageView playerNextMusic;
     public CircleImageView spImgHome;
     public TextView spTitleHome;
     private ImageLoader imageLoader;
-
-    //playing fragment show content
-    private FrameLayout playerContent;
+    private ProgressBar mProgressBar;
 
     public static List<AudioItem> audioItemList=new ArrayList<>();
     public static List<VideoItem> videoItemList=new ArrayList<>();
 
     public static AudioItem currentPlayingMusic;
 
-    boolean isNotificationVisible = false;
-    public boolean isPlayerVisible=false;
-
     public PlayerFragment playerFragment;
     public LinearLayout mainView;
 
-    private ServiceConnection serviceConnection;
-    private MediaPlayerService myService;
     private boolean bound = false;
+    protected MusicPlayService playService;
+    private ServiceConnection serviceConnection;
+
+    private boolean isPlayFragmentShow=false;
+    private PlayingFragment mPlayFragment;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,11 +93,13 @@ public class MainActivity extends AppCompatActivity implements
         spHomePlayerBar=findViewById(R.id.smallPlayer_home);
         spImgHome=findViewById(R.id.selected_track_image_sp_home);
         spTitleHome=findViewById(R.id.selected_track_title_sp_home);
-        playerContent=findViewById(R.id.playerContent);
-        bottomToolbar=findViewById(R.id.bottomMargin);
         mainView=findViewById(R.id.mainView);
-        playerControllerHome=findViewById(R.id.player_control_sp_home);
+        playerControllerHome=(ImageView) findViewById(R.id.player_control_sp_home);
         playerNextMusic=findViewById(R.id.player_next_sp_home);
+        mProgressBar=findViewById(R.id.pb_play_bar);
+
+        bindService();
+        MusicPlayer.get().addOnPlayEventListener(this);
 
         imageLoader=new ImageLoader(this);
         initMediaData();
@@ -153,125 +144,87 @@ public class MainActivity extends AppCompatActivity implements
         mVp.setCurrentItem(0);
         spHomePlayerBar.setOnClickListener(this);
 
-        serviceConnection = new ServiceConnection() {
-            @Override
-            public void onServiceConnected(ComponentName className, IBinder service) {
-                MediaPlayerService.LocalBinder binder = (MediaPlayerService.LocalBinder) service;
-                myService = binder.getService();
-                bound = true;
-                myService.setCallbacks(MainActivity.this);
-            }
-            @Override
-            public void onServiceDisconnected(ComponentName arg0) {
-                bound = false;
-            }
-        };
         playerControllerHome.setOnClickListener(this);
         playerNextMusic.setOnClickListener(this);
     }
+
+    private void bindService() {
+        Intent intent = new Intent();
+        intent.setClass(this, MusicPlayService.class);
+        serviceConnection = new PlayServiceConnection();
+        bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    private class PlayServiceConnection implements ServiceConnection {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            playService = ((MusicPlayService.PlayBinder) service).getService();
+            onServiceBound();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            Log.e(getClass().getSimpleName(), "service disconnected");
+        }
+    }
+
+    protected void onServiceBound() {
+        Log.d("Service connect","connected");
+
+    }
+
+
+
+    @Override
+    public void onChange(AudioItem music) {
+        if (music == null) {
+            return;
+        }
+        spTitleHome.setText(music.getTitle());
+        imageLoader.DisplayImage(music.getPath(),spImgHome);
+        playerControllerHome.setSelected(MusicPlayer.get().isPlaying() || MusicPlayer.get().isPreparing());
+        mProgressBar.setMax((int) music.getDuration());
+        mProgressBar.setProgress((int) MusicPlayer.get().getAudioPosition());
+    }
+
+    @Override
+    public void onPlayerStart() {
+        playerControllerHome.setSelected(true);
+//        Toast.makeText(this,"播放了",Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onPlayerPause() {
+        playerControllerHome.setSelected(false);
+//        Toast.makeText(this,"暂停了",Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onPublish(int progress) {
+        mProgressBar.setProgress(progress);
+    }
+
+    @Override
+    public void onBufferingUpdate(int percent) {
+
+    }
+
 
     @Override
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.smallPlayer_home:
-                showPlayer();
+                showPlayingFragment();
                 break;
             case R.id.player_control_sp_home:
-                if (PlayerFragment.mMediaPlayer.isPlaying()){
-                    PlayerFragment.mMediaPlayer.pause();
-                    playerControllerHome.setImageResource(R.drawable.ic_play_arrow_black_24dp);
-                }else {
-                    if (!PlayerFragment.completed){
-                        PlayerFragment.mMediaPlayer.start();
-                        playerControllerHome.setImageResource(R.drawable.ic_pause_black_24dp);
-                    }
-                }
+                MusicPlayer.get().playPause();
                 break;
             case R.id.player_next_sp_home:
-
+                MusicPlayer.get().next();
                 break;
             default:
                 break;
         }
-    }
-
-    @Override
-    public void onComplete() {
-
-    }
-
-    @Override
-    public void onPreviousTrack() {
-
-    }
-
-    @Override
-    public void onEqualizerClicked() {
-
-    }
-
-    @Override
-    public void onQueueClicked() {
-
-    }
-
-    @Override
-    public void onPrepared() {
-
-    }
-
-    @Override
-    public void onFullScreen() {
-
-    }
-
-    @Override
-    public void onSettingsClicked() {
-
-    }
-
-    @Override
-    public void onAddedtoFavfromPlayer() {
-
-    }
-
-    @Override
-    public void onShuffleEnabled() {
-
-    }
-
-    @Override
-    public void onShuffleDisabled() {
-
-    }
-
-    @Override
-    public void onSmallPlayerTouched() {
-        if (!isPlayerVisible) {
-            isPlayerVisible = true;
-            showPlayer();
-        } else {
-            isPlayerVisible = false;
-            hidePlayer();
-        }
-    }
-
-    @Override
-    public void addCurrentSongtoPlaylist(AudioItem ut) {
-
-    }
-
-    /**
-     * 播放音乐暂停
-     */
-    @Override
-    public void onPlayPause() {
-
-    }
-
-    @Override
-    public PlayerFragment getPlayerFragment() {
-        return playerFragment;
     }
 
     class MyPageAdapter extends FragmentPagerAdapter {
@@ -302,13 +255,9 @@ public class MainActivity extends AppCompatActivity implements
             @Override
             public void onMusicClickCallBack(int position) {
                 currentPlayingMusic=audioItemList.get(position);
-                spTitleHome.setText(audioItemList.get(position).getTitle());
-                imageLoader.DisplayImage(audioItemList.get(position).getPath(),spImgHome);
-                isPlayerVisible = true;
-                playerControllerHome.setImageResource(R.drawable.ic_pause_black_24dp);
-//                hideMainView();
-                showPlayer();
-//                spImgHome.setImageBitmap(MediaUtil.getAlbumArt(MainActivity.this,audioItemList.get(position).getAlbum_id()));
+                AudioItem music = audioItemList.get(position);
+                MusicPlayer.get().addAndPlay(music);
+                showPlayingFragment();
             }
         });
     }
@@ -328,7 +277,6 @@ public class MainActivity extends AppCompatActivity implements
                             Log.d("TAG_Video",item.toString());
                         }
                     }
-
                     @Override
                     public void onPermissionDenied() {
                         PermissionUtil.showTipsDialog(MainActivity.this);
@@ -336,100 +284,48 @@ public class MainActivity extends AppCompatActivity implements
                 });
     }
 
-    public void showPlayer(){
-        isPlayerVisible=true;
-        //展示播放内容
-        PlayerFragment frag = playerFragment;
-        FragmentManager fm = getSupportFragmentManager();
-        if (frag==null){
-            frag=new PlayerFragment();
-            playerFragment=frag;
-            fm.beginTransaction()
-                    .add(R.id.playerContent, frag, "player")
-                    .show(frag)
-                    .addToBackStack(null)
-                    .commitAllowingStateLoss();
-        }else {
-            frag.refresh();
+    private void showPlayingFragment() {
+        if (isPlayFragmentShow) {
+            return;
         }
-    }
-
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-    public void hidePlayer() {
-        isPlayerVisible = false;
-        if (playerFragment != null && playerFragment.smallPlayer != null) {
-            playerFragment.smallPlayer.setAlpha(0.0f);
-            playerFragment.smallPlayer.setVisibility(View.VISIBLE);
-            playerFragment.smallPlayer.animate()
-                    .alpha(1.0f);
-        }
-        if (playerFragment != null && playerFragment.spToolbar != null) {
-            playerFragment.spToolbar.animate()
-                    .alpha(0.0f)
-                    .withEndAction(new Runnable() {
-                        @Override
-                        public void run() {
-                            playerFragment.spToolbar.setVisibility(GONE);
-                        }
-                    });
-        }
-
-        playerContent.setVisibility(View.VISIBLE);
-        if (playerFragment != null) {
-            playerContent.animate()
-                    .translationY(playerContent.getHeight() - playerFragment.smallPlayer.getHeight())
-                    .setDuration(300);
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.setCustomAnimations(R.anim.fragment_slide_up, 0);
+        if (mPlayFragment == null) {
+            mPlayFragment = new PlayingFragment();
+            ft.replace(android.R.id.content, mPlayFragment);
         } else {
-            playerContent.animate()
-                    .translationY(playerContent.getHeight() - playerFragment.smallPlayer.getHeight())
-                    .setDuration(300)
-                    .setStartDelay(500);
+            ft.show(mPlayFragment);
         }
+        ft.commitAllowingStateLoss();
+        isPlayFragmentShow = true;
+    }
 
-        if (playerFragment != null) {
-            playerFragment.mainTrackController.setAlpha(0.0f);
-            playerFragment.mainTrackController.setImageDrawable(playerFragment.mainTrackController.getDrawable());
-            playerFragment.mainTrackController.animate().alpha(1.0f);
+    private void hidePlayingFragment() {
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.setCustomAnimations(0, R.anim.fragment_slide_down);
+        ft.hide(mPlayFragment);
+        ft.commitAllowingStateLoss();
+        isPlayFragmentShow = false;
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (mPlayFragment != null && isPlayFragmentShow) {
+            hidePlayingFragment();
+            return;
         }
+        super.onBackPressed();
     }
 
-    public void hideFragment(String tag) {
-        if (tag.equals("player")) {
-            showMainView();
-            isPlayerVisible = false;
-            FragmentManager fm = getSupportFragmentManager();
-            Fragment frag = fm.findFragmentByTag("player");
-            if (frag!= null) {
-                fm.beginTransaction()
-                        .remove(frag)
-                        .commitAllowingStateLoss();
-            }
+
+    @Override
+    protected void onDestroy() {
+        MusicPlayer.get().removeOnPlayEventListener(this);
+        if (serviceConnection != null) {
+            unbindService(serviceConnection);
         }
+        super.onDestroy();
     }
-
-    public void hideAllFrags() {
-        hideFragment("player");
-    }
-
-    public void showNotification() {
-        if (!isNotificationVisible) {
-            Intent intent = new Intent(this, MediaPlayerService.class);
-            intent.setAction(Constants.ACTION_PLAY);
-            startService(intent);
-            isNotificationVisible = true;
-        }
-    }
-
-    public void hideMainView() {
-        mainView.setVisibility(View.INVISIBLE);
-    }
-
-    public void showMainView(){
-        mainView.setVisibility(View.VISIBLE);
-    }
-
-
-
 
 
 }

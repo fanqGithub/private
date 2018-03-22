@@ -41,7 +41,6 @@ import android.widget.Toast;
 import com.commai.commaplayer.Entity.AudioItem;
 import com.commai.commaplayer.MainActivity;
 import com.commai.commaplayer.R;
-import com.commai.commaplayer.service.AudioPlayerBroadcastReceiver;
 import com.commai.commaplayer.utils.MediaUtil;
 import com.commai.commaplayer.utils.imageLoader.ImageLoader;
 
@@ -53,26 +52,19 @@ import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
-
-/**
- * A simple {@link Fragment} subclass.
- */
-public class PlayerFragment extends Fragment implements AudioPlayerBroadcastReceiver.onCallbackListener,View.OnClickListener{
+public class PlayerFragment extends Fragment implements View.OnClickListener{
 
     public static MediaPlayer mMediaPlayer;
-    public static Visualizer mVisualizer;
-    public static Equalizer mEqualizer;
-    public static BassBoost bassBoost;
-    public static PresetReverb presetReverb;
 
     public static boolean isReplayIconVisible = false;
 
     public static boolean isPrepared = false;
 
-    TextView currTime, totalTime;
+    private TextView currTime, totalTime;
 
     //中间的圆图
     public ImageView playing_music_img;
+    //播放标题
     public TextView playging_music_title;
 
     public ImageView mainTrackController;
@@ -89,7 +81,7 @@ public class PlayerFragment extends Fragment implements AudioPlayerBroadcastRece
     public ImageView small_playing_music_img;
     public TextView small_music_title;
     public TextView small_artist;
-    public ImageView small_player_controller;
+    public ImageView small_player_controller,small_player_next;
 
     public RelativeLayout smallPlayer;
 
@@ -106,9 +98,6 @@ public class PlayerFragment extends Fragment implements AudioPlayerBroadcastRece
 
     static boolean isRefreshed = false;
 
-    public PlayerFragmentCallbackListener mCallback;
-    public onPlayPauseListener mCallback7;
-
     private ImageLoader imageLoader;
 
     private Pair<String,String> temp;
@@ -116,6 +105,8 @@ public class PlayerFragment extends Fragment implements AudioPlayerBroadcastRece
     public Timer timer;
 
     private ImageView img_back;
+
+    public AudioItem currentMusic;
 
     @Nullable
     @Override
@@ -128,9 +119,17 @@ public class PlayerFragment extends Fragment implements AudioPlayerBroadcastRece
         playging_music_title=view.findViewById(R.id.music_title);
         playging_music_title.setSelected(true);
         mainTrackController=view.findViewById(R.id.controller);
+        nextTrackController = (ImageView) view.findViewById(R.id.next);
+        previousTrackController = (ImageView) view.findViewById(R.id.previous);
         img_back=view.findViewById(R.id.img_back);
 
+        //小播放器
         smallPlayer = (RelativeLayout) view.findViewById(R.id.smallPlayer);
+        small_playing_music_img=view.findViewById(R.id.selected_track_image_sp);
+        small_music_title=view.findViewById(R.id.selected_track_title_sp);
+        small_artist=view.findViewById(R.id.selected_track_artist_sp);
+        small_player_controller=view.findViewById(R.id.player_control_sp);
+        small_player_next=view.findViewById(R.id.player_control_sp);
 
 
         mainTrackController.setOnClickListener(this);
@@ -142,7 +141,7 @@ public class PlayerFragment extends Fragment implements AudioPlayerBroadcastRece
         smallPlayer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mCallback.onSmallPlayerTouched();
+
             }
         });
         return view;
@@ -151,23 +150,32 @@ public class PlayerFragment extends Fragment implements AudioPlayerBroadcastRece
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        homeActivity= (MainActivity) context;
-        try {
-            mCallback = (PlayerFragmentCallbackListener) context;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(context.toString()
-                    + " must implement OnHeadlineSelectedListener");
-        }
         mMediaPlayer = new MediaPlayer();
     }
 
     //初始化播放器
     private void initMediaPlayer(){
+        currentMusic=MainActivity.currentPlayingMusic;
         durationInMilliSec = MainActivity.currentPlayingMusic.getDuration();
         progressBar.setMax(durationInMilliSec);
         temp = MediaUtil.getTime(durationInMilliSec);
         totalTime.setText(temp.first + ":" + temp.second);
         playging_music_title.setText(MainActivity.currentPlayingMusic.getTitle());
+        imageLoader.DisplayImage(MainActivity.currentPlayingMusic.getPath(),small_playing_music_img);
+        small_music_title.setText(MainActivity.currentPlayingMusic.getTitle());
+        small_artist.setText(MainActivity.currentPlayingMusic.getArtist());
+        imageLoader.DisplayImage(MainActivity.currentPlayingMusic.getPath(),playing_music_img);
+        try {
+            mMediaPlayer.setDataSource(MainActivity.currentPlayingMusic.getPath());
+//            mMediaPlayer.setLooping(true);
+            mMediaPlayer.prepare();
+            if (!mMediaPlayer.isPlaying()) {
+                mMediaPlayer.start();
+                mainTrackController.setImageResource(R.drawable.ic_pause_white_48dp);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         timer = new Timer();
         timer.scheduleAtFixedRate(
                 new TimerTask() {
@@ -215,13 +223,11 @@ public class PlayerFragment extends Fragment implements AudioPlayerBroadcastRece
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-                startTrack = System.currentTimeMillis();
                 isTracking = true;
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                endTrack = System.currentTimeMillis();
                 mMediaPlayer.seekTo(seekBar.getProgress());
                 if (mMediaPlayer.isPlaying()) {
                     mMediaPlayer.start();
@@ -271,197 +277,20 @@ public class PlayerFragment extends Fragment implements AudioPlayerBroadcastRece
                 return true;
             }
         });
-        imageLoader.DisplayImage(MainActivity.currentPlayingMusic.getPath(),playing_music_img);
-        try {
-            mMediaPlayer.setDataSource(MainActivity.currentPlayingMusic.getPath());
-            //设置为循环播放
-            mMediaPlayer.setLooping(true);
-            mMediaPlayer.prepare();
-            if (!mMediaPlayer.isPlaying()) {
-                mMediaPlayer.start();
-                mainTrackController.setImageResource(R.drawable.ic_pause_white_48dp);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
-    public void refresh() {
-        isRefreshed = true;
-        pauseClicked = false;
-        completed = false;
-        isTracking = false;
-
-        if (homeActivity.isPlayerVisible) {
-            mainTrackController.setVisibility(View.VISIBLE);
-            mainTrackController.setImageResource(R.drawable.ic_pause_white_48dp);
-        } else {
-            mainTrackController.setVisibility(View.VISIBLE);
-            mainTrackController.setImageResource(R.drawable.ic_pause_white_48dp);
-        }
-
-        isFav = false;
-
-        temp = MediaUtil.getTime(durationInMilliSec);
-        totalTime.setText(temp.first + ":" + temp.second);
-        progressBar.setMax(durationInMilliSec);
-        timer.cancel();
-        timer = new Timer();
-        timer.scheduleAtFixedRate(
-                new TimerTask() {
-                    @Override
-                    public void run() {
-                        if (isPrepared && !isTracking && getActivity() != null) {
-                            getActivity().runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    float[] hsv = new float[3];
-                                    hsv[0] = (float) 0.5;
-                                    hsv[1] = (float) 0.8;
-                                    hsv[2] = (float) 0.5;
-                                    progressBar.getProgressDrawable().setColorFilter(new PorterDuffColorFilter(Color.HSVToColor(hsv), PorterDuff.Mode.SRC_IN));
-                                }
-                            });
-                            try {
-                                temp = MediaUtil.getTime(mMediaPlayer.getCurrentPosition());
-                                getActivity().runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        currTime.setText(temp.first + ":" + temp.second);
-                                    }
-                                });
-                                progressBar.setProgress(mMediaPlayer.getCurrentPosition());
-                            } catch (Exception e) {
-                                Log.e("MEDIA", e.getMessage() + ":");
-                            }
-                        }
-                    }
-                }, 0, 50);
-
-        progressBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                temp = MediaUtil.getTime(progress);
-                getActivity().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        currTime.setText(temp.first + ":" + temp.second);
-                    }
-                });
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-                startTrack = System.currentTimeMillis();
-                isTracking = true;
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                endTrack = System.currentTimeMillis();
-                mMediaPlayer.seekTo(seekBar.getProgress());
-                if (mMediaPlayer.isPlaying()) {
-                    mMediaPlayer.start();
-                }
-                isTracking = false;
-            }
-
-        });
-    }
-
-
-    @Override
-    public void onCallbackCalled(int i) {
-
-    }
-
-    @Override
-    public void togglePLayPauseCallback() {
-
-    }
-
-    @Override
-    public boolean getPauseClicked() {
-        return false;
-    }
-
-    @Override
-    public void setPauseClicked(boolean bool) {
-
-    }
-
-    @Override
-    public MediaPlayer getMediaPlayer() {
-        return mMediaPlayer;
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.controller:
-                if (mMediaPlayer.isPlaying()){
-                    mMediaPlayer.pause();
-                    mainTrackController.setImageResource(R.drawable.ic_play_arrow_white_48dp);
-                }else {
-                    if (!completed){
-                        mMediaPlayer.start();
-                        mainTrackController.setImageResource(R.drawable.ic_pause_white_48dp);
-                    }
-                }
                 break;
             case R.id.img_back:
-                homeActivity.hidePlayer();
-                homeActivity.isPlayerVisible = false;
+
                 break;
             default:
                 break;
         }
     }
-
-
-    public interface PlayerFragmentCallbackListener {
-        void onComplete();
-
-        void onPreviousTrack();
-
-        void onEqualizerClicked();
-
-        void onQueueClicked();
-
-        void onPrepared();
-
-        void onFullScreen();
-
-        void onSettingsClicked();
-
-        void onAddedtoFavfromPlayer();
-
-        void onShuffleEnabled();
-
-        void onShuffleDisabled();
-
-        void onSmallPlayerTouched();
-
-        void addCurrentSongtoPlaylist(AudioItem ut);
-    }
-
-    public interface onPlayPauseListener {
-        void onPlayPause();
-    }
-
-    MainActivity homeActivity;
-    public static Context ctx;
-
-    public RelativeLayout spToolbar;
-    ImageView overflowMenuAB;
-    ImageView spImgAB;
-    TextView spTitleAB;
-    TextView spArtistAB;
-
-    public boolean isStart = true;
-
-    long startTrack;
-    long endTrack;
 
 }

@@ -45,9 +45,14 @@
         android:layout_height="65dp"
         android:layout_gravity="bottom"
         android:background="#fff"
-        android:elevation="3dp"
-        android:visibility="gone">
-
+        android:elevation="3dp">
+        <ProgressBar
+            android:id="@+id/pb_play_bar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:layout_gravity="top"
+            android:progressDrawable="@drawable/progress_bar_style" />
         <android.support.v7.widget.Toolbar
             android:id="@+id/smallPlayer_home"
             android:layout_width="match_parent"
@@ -106,15 +111,12 @@
                 android:layout_marginRight="17dp"
                 android:layout_marginTop="2dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_play_arrow_black_24dp"
+                android:src="@drawable/play_bar_btn_play_pause_selector"
                 android:clickable="true"
                 android:visibility="visible" />
 
             </android.support.v7.widget.Toolbar>
+
         </FrameLayout>
     </LinearLayout>
-    <FrameLayout
-        android:id="@+id/playerContent"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
 </RelativeLayout>

@@ -29,9 +29,7 @@
         </activity>
         <activity android:name=".activity.PlayerActivity" />
 
-        <service
-            android:name=".service.MediaPlayerService"
-            android:stopWithTask="false" />
+        <service android:name=".service.MusicPlayService" />
     </application>
 
 </manifest>
