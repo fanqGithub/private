@@ -20,6 +20,7 @@ import java.util.Random;
 /**
  * Created by fanqi on 2018/3/22.
  * Description:
+ * 播放器管理者
  */
 
 public class MusicPlayer {

@@ -52,6 +52,10 @@ import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
+/**
+ * 遗弃
+ */
+@Deprecated
 public class PlayerFragment extends Fragment implements View.OnClickListener{
 
     public static MediaPlayer mMediaPlayer;
