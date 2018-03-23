@@ -30,6 +30,12 @@
         <activity android:name=".activity.PlayerActivity" />
 
         <service android:name=".service.MusicPlayService" />
+
+        <receiver android:name=".notification.StatusBarReceiver">
+            <intent-filter>
+                <action android:name="com.comma.music.STATUS_BAR_ACTIONS" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

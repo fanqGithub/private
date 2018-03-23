@@ -9,6 +9,7 @@ import android.os.Looper;
 
 import com.commai.commaplayer.Entity.AudioItem;
 import com.commai.commaplayer.enums.PlayModeEnum;
+import com.commai.commaplayer.notification.Notifier;
 import com.commai.commaplayer.shareprefrence.Preferences;
 import com.commai.commaplayer.utils.MediaUtil;
 
@@ -119,6 +120,7 @@ public class MusicPlayer {
             mediaPlayer.setDataSource(music.getPath());
             mediaPlayer.prepareAsync();
             state = STATE_PREPARING;
+            Notifier.getInstance().showPlay(music);
             for (OnPlayerEventListener listener : listeners) {
                 listener.onChange(music);
             }
@@ -165,6 +167,7 @@ public class MusicPlayer {
         state = STATE_PLAYING;
 
         handler.post(mPublishRunnable);
+        Notifier.getInstance().showPlay(getPlayMusic());
 
         for (OnPlayerEventListener listener : listeners) {
             listener.onPlayerStart();
@@ -181,7 +184,7 @@ public class MusicPlayer {
         }
         mediaPlayer.pause();
         state = STATE_PAUSE;
-
+        Notifier.getInstance().showPause(getPlayMusic());
         for (OnPlayerEventListener listener : listeners) {
             listener.onPlayerPause();
         }

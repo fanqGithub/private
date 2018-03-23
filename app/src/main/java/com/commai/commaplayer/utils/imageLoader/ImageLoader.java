@@ -67,6 +67,19 @@ public class ImageLoader {
         }
     }
 
+    public Bitmap getBitmapImgByUrl(String url){
+        Bitmap bitmap=null;
+        if (type.equals("none")) {
+            bitmap = memoryCache.get(url);
+        }
+        if (bitmap!=null){
+            return bitmap;
+        }else {
+            bitmap=BitmapFactory.decodeResource(Resources.getSystem(), R.mipmap.ic_music_default);
+        }
+        return bitmap;
+    }
+
     public void setViewBgImg(String url,View view){
 
     }

@@ -264,6 +264,8 @@ public class PlayingFragment extends BaseFragment implements SeekBar.OnSeekBarCh
                 mode = PlayModeEnum.LOOP;
 //                ToastUtils.show(R.string.mode_loop);
                 break;
+            default:
+                break;
         }
         Preferences.savePlayMode(mode.value());
         initPlayMode();

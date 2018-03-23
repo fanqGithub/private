@@ -37,6 +37,7 @@ import com.commai.commaplayer.fragment.SelfPlayListFragment;
 import com.commai.commaplayer.service.MusicPlayService;
 import com.commai.commaplayer.service.MusicPlayer;
 import com.commai.commaplayer.service.OnPlayerEventListener;
+import com.commai.commaplayer.shareprefrence.Preferences;
 import com.commai.commaplayer.utils.MediaUtil;
 import com.commai.commaplayer.utils.PermissionUtil;
 import com.commai.commaplayer.utils.imageLoader.ImageLoader;
@@ -83,6 +84,9 @@ public class MainActivity extends AppCompatActivity implements
     private boolean isPlayFragmentShow=false;
     private PlayingFragment mPlayFragment;
 
+    private FrameLayout bottomSmallPalyer;
+    private int lastplayposition=0;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,6 +94,7 @@ public class MainActivity extends AppCompatActivity implements
         setContentView(R.layout.activity_main);
         segment_ct=findViewById(R.id.segment_ct);
         mVp=findViewById(R.id.vp_content);
+        bottomSmallPalyer=findViewById(R.id.bottomMargin);
         spHomePlayerBar=findViewById(R.id.smallPlayer_home);
         spImgHome=findViewById(R.id.selected_track_image_sp_home);
         spTitleHome=findViewById(R.id.selected_track_title_sp_home);
@@ -97,6 +102,7 @@ public class MainActivity extends AppCompatActivity implements
         playerControllerHome=(ImageView) findViewById(R.id.player_control_sp_home);
         playerNextMusic=findViewById(R.id.player_next_sp_home);
         mProgressBar=findViewById(R.id.pb_play_bar);
+        lastplayposition = Preferences.getPlayPosition();
 
         bindService();
         MusicPlayer.get().addOnPlayEventListener(this);
@@ -270,6 +276,20 @@ public class MainActivity extends AppCompatActivity implements
                     public void onPermissionGranted() {
                         audioItemList= MediaUtil.scanAudios(MainActivity.this);
                         videoItemList= MediaUtil.scanVideos(MainActivity.this);
+                        if (audioItemList.size()>0){
+                            if (lastplayposition>audioItemList.size()){
+                                spTitleHome.setText(audioItemList.get(0).getTitle());
+                                imageLoader.DisplayImage(audioItemList.get(0).getPath(),spImgHome);
+                            }else if (lastplayposition==audioItemList.size()){
+                                spTitleHome.setText(audioItemList.get(audioItemList.size()-1).getTitle());
+                                imageLoader.DisplayImage(audioItemList.get(audioItemList.size()-1).getPath(),spImgHome);
+                            }else {
+                                spTitleHome.setText(audioItemList.get(lastplayposition).getTitle());
+                                imageLoader.DisplayImage(audioItemList.get(lastplayposition).getPath(),spImgHome);
+                            }
+                        }else {
+                            bottomSmallPalyer.setVisibility(View.GONE);
+                        }
                         for (AudioItem item:audioItemList){
                             Log.d("TAG_MUSICS",item.toString());
                         }

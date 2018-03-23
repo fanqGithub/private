@@ -41,12 +41,14 @@ public class MusicItemAdapter extends RecyclerView.Adapter<MusicItemAdapter.Musi
 
     @Override
     public void onBindViewHolder(MusicItemHolder holder, int position) {
+        AudioItem item=list.get(position);
         imageLoader.DisplayImage(list.get(position).getPath(),holder.music_img);
         holder.name.setText(list.get(position).getTitle());
         long size = list.get(position).getSize()/1024/1024;
         int minute = list.get(position).getDuration()/1000/60;
         int second = list.get(position).getDuration()/1000%60;
-        holder.info.setText("歌手: " + list.get(position).getArtist() +", 时长: " + minute + ":" + second + ",大小：" + size + "M");
+        holder.info.setText("时长: " + minute + ":" + second);
+        holder.artist_alum.setText(item.getArtist()+"——"+item.getAlbum());
         holder.itemView.setTag(position);
     }
 
@@ -63,11 +65,13 @@ public class MusicItemAdapter extends RecyclerView.Adapter<MusicItemAdapter.Musi
         ImageView music_img;
         TextView name;
         TextView info;
+        TextView artist_alum;
         public MusicItemHolder(View itemView) {
             super(itemView);
             music_img=itemView.findViewById(R.id.music_img);
             name = itemView.findViewById(R.id.music_name);
             info = itemView.findViewById(R.id.detail_txt);
+            artist_alum=itemView.findViewById(R.id.artist_alum);
         }
     }
 }

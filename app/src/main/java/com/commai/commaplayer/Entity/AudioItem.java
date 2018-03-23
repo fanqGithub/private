@@ -1,11 +1,15 @@
 package com.commai.commaplayer.Entity;
 
+import android.text.TextUtils;
+
 /**
  * Created by fanqi on 2018/3/14.
  * Description:
  */
 
 public class AudioItem {
+
+    private int songId;
 
     //音频名称
     private String name;
@@ -28,6 +32,8 @@ public class AudioItem {
     private int album_id;
 
     private String title;
+
+    private String album;
 
 
     public String getName() {
@@ -76,6 +82,40 @@ public class AudioItem {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public String getAlbum() {
+        return album;
+    }
+
+    public void setAlbum(String album) {
+        this.album = album;
+    }
+
+    public int getSongId() {
+        return songId;
+    }
+
+    public void setSongId(int songId) {
+        this.songId = songId;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof AudioItem)) {
+            return false;
+        }
+        AudioItem music = (AudioItem) obj;
+        if (music.songId > 0 && music.songId == this.songId) {
+            return true;
+        }
+        if (TextUtils.equals(music.title, this.title)
+                && TextUtils.equals(music.artist, this.artist)
+                && TextUtils.equals(music.album, this.album)
+                && music.duration == this.duration) {
+            return true;
+        }
+        return false;
     }
 
     @Override

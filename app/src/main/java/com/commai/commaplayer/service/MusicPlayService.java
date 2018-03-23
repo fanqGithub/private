@@ -1,5 +1,6 @@
 package com.commai.commaplayer.service;
 
+import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -7,6 +8,8 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
+
+import com.commai.commaplayer.notification.Notifier;
 
 /**
  * Created by fanqi on 2018/3/22.
@@ -28,6 +31,7 @@ public class MusicPlayService extends Service {
         super.onCreate();
         Log.i(TAG, "onCreate: " + getClass().getSimpleName());
         MusicPlayer.get().init(this);
+        Notifier.getInstance().init(this);
     }
 
     @Nullable
@@ -58,5 +62,7 @@ public class MusicPlayService extends Service {
 
     private void stop() {
         MusicPlayer.get().stopPlayer();
+        Notifier.getInstance().cancelAll();
     }
+
 }
