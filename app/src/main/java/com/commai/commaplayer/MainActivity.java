@@ -1,19 +1,15 @@
 package com.commai.commaplayer;
 
 import android.Manifest;
-import android.annotation.TargetApi;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.graphics.Bitmap;
-import android.os.Build;
 import android.os.IBinder;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -25,13 +21,11 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.commai.commaplayer.Entity.AudioItem;
 import com.commai.commaplayer.Entity.VideoItem;
 import com.commai.commaplayer.fragment.LocalMusicFragment;
 import com.commai.commaplayer.fragment.LocalVideoFragment;
-import com.commai.commaplayer.fragment.PlayerFragment;
 import com.commai.commaplayer.fragment.PlayingFragment;
 import com.commai.commaplayer.fragment.SelfPlayListFragment;
 import com.commai.commaplayer.service.MusicPlayService;
@@ -47,8 +41,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
-
-import static android.view.View.GONE;
 
 public class MainActivity extends AppCompatActivity implements
         View.OnClickListener,OnPlayerEventListener{
@@ -74,7 +66,6 @@ public class MainActivity extends AppCompatActivity implements
 
     public static AudioItem currentPlayingMusic;
 
-    public PlayerFragment playerFragment;
     public LinearLayout mainView;
 
     private boolean bound = false;

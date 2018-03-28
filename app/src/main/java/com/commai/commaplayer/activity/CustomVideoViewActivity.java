@@ -2,16 +2,13 @@ package com.commai.commaplayer.activity;
 
 import android.annotation.TargetApi;
 import android.content.res.Configuration;
-import android.media.Image;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
-import android.util.DisplayMetrics;
 import android.util.Pair;
 import android.view.MotionEvent;
 import android.view.View;
@@ -27,23 +24,19 @@ import android.widget.VideoView;
 
 import com.commai.commaplayer.R;
 import com.commai.commaplayer.base.BaseActivity;
-import com.commai.commaplayer.service.MusicPlayer;
-import com.commai.commaplayer.service.OnPlayerEventListener;
-import com.commai.commaplayer.utils.MediaUtil;
-import com.commai.commaplayer.widget.CmVideoView;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
 /**
- * @author:范启 Created on 2018/3/25.
+ * Created by fanqi on 2018/3/28.
  * Description:
  */
 
-public class CmVideoViewActivity extends BaseActivity implements View.OnClickListener,View.OnTouchListener{
+public class CustomVideoViewActivity extends BaseActivity implements View.OnClickListener,View.OnTouchListener{
 
-    @BindView(R.id.cm_video_player)
-    CmVideoView videoView;
+    @BindView(R.id.videoplayer)
+    VideoView videoView;
 
     @BindView(R.id.seek_video)
     SeekBar videoSeek;
@@ -71,28 +64,14 @@ public class CmVideoViewActivity extends BaseActivity implements View.OnClickLis
     @BindView(R.id.bottomControl)
     FrameLayout bottomControl;
 
-    @BindView(R.id.topControl)
-    FrameLayout topControl;
-
     @BindView(R.id.playLayout)
     RelativeLayout playLayout;
 
-    @BindView(R.id.video_title)
-    TextView tvVideoTitle;
-
-    @BindView(R.id.iv_back)
-    ImageView ivBack;
-
-    @BindView(R.id.more_vert)
-    ImageView ivMorevert;
-
-    private boolean controlShowing=true;
+    private boolean bottomControlShowing=false;
 
     private Handler showCotrollHandler;
 
     private String totalVideoTime="";
-
-    private String videoTitle="";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -104,15 +83,12 @@ public class CmVideoViewActivity extends BaseActivity implements View.OnClickLis
         //设置当前窗体为全屏显示
         window.setFlags(flag, flag);
         getWindow().getDecorView().setSystemUiVisibility(View.INVISIBLE);
-        setContentView(R.layout.activity_cm_videoview_player);
+        setContentView(R.layout.activity_videoview_player);
         ButterKnife.bind(this);
         initViewData();
     }
 
     private void initViewData(){
-        showCotrollHandler=new Handler();
-        showCotrollHandler.postDelayed(mShowControllRunnable,5000);
-
         handler=new Handler(new Handler.Callback() {
             @Override
             public boolean handleMessage(Message msg) {
@@ -135,18 +111,15 @@ public class CmVideoViewActivity extends BaseActivity implements View.OnClickLis
         ivPlayPause.setOnClickListener(this);
         ivPrevious.setOnClickListener(this);
         ivNext.setOnClickListener(this);
-        ivBack.setOnClickListener(this);
         videoView.setOnTouchListener(this);
         playLayout.setOnTouchListener(this);
 
         if (getIntent().getExtras()!=null){
             mediaPath=getIntent().getStringExtra("mediaPath");
-            videoTitle=getIntent().getStringExtra("videoTitle");
         }
         if (!TextUtils.isEmpty(mediaPath)) {
             videoView.setVideoPath(mediaPath);
         }
-        tvVideoTitle.setText(videoTitle);
 
         videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
@@ -173,9 +146,8 @@ public class CmVideoViewActivity extends BaseActivity implements View.OnClickLis
         videoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
-                Toast.makeText(CmVideoViewActivity.this,"播放完了",Toast.LENGTH_SHORT).show();
+                Toast.makeText(CustomVideoViewActivity.this,"播放完了",Toast.LENGTH_SHORT).show();
                 ivPlayPause.setSelected(false);
-                handler.removeCallbacks(mUpdateRunnable);
             }
         });
 
@@ -225,9 +197,6 @@ public class CmVideoViewActivity extends BaseActivity implements View.OnClickLis
                 break;
             case R.id.video_next:
                 break;
-            case R.id.iv_back:
-                this.finish();
-                break;
             default:
                 break;
         }
@@ -251,21 +220,19 @@ public class CmVideoViewActivity extends BaseActivity implements View.OnClickLis
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
-        if (v.getId()==R.id.cm_video_player||v.getId()==R.id.playLayout){
+        if (v.getId()==R.id.videoplayer||v.getId()==R.id.playLayout){
             if (MotionEvent.ACTION_DOWN==event.getAction()) {
-                if (controlShowing) {
+                if (bottomControlShowing) {
                     bottomControl.setVisibility(View.GONE);
-                    topControl.setVisibility(View.GONE);
-                    controlShowing = false;
+                    bottomControlShowing = false;
                     if (showCotrollHandler!=null){
                         showCotrollHandler.removeCallbacks(mShowControllRunnable);
                     }
                 } else {
                     bottomControl.setVisibility(View.VISIBLE);
-                    topControl.setVisibility(View.VISIBLE);
-                    controlShowing = true;
+                    bottomControlShowing = true;
                     showCotrollHandler=new Handler();
-                    showCotrollHandler.postDelayed(mShowControllRunnable,5000);
+                    showCotrollHandler.postDelayed(mShowControllRunnable,4000);
                 }
             }
         }
@@ -276,8 +243,7 @@ public class CmVideoViewActivity extends BaseActivity implements View.OnClickLis
         @Override
         public void run() {
             bottomControl.setVisibility(View.GONE);
-            topControl.setVisibility(View.GONE);
-            controlShowing = false;
+            bottomControlShowing = false;
         }
     };
 
@@ -295,14 +261,5 @@ public class CmVideoViewActivity extends BaseActivity implements View.OnClickLis
         return timeStr;
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (handler!=null){
-            handler.removeCallbacks(mUpdateRunnable);
-        }
-        if (showCotrollHandler!=null){
-           showCotrollHandler.removeCallbacks(mShowControllRunnable);
-        }
-    }
+
 }

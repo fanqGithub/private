@@ -5,22 +5,18 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/bg_black">
-    <com.commai.commaplayer.widget.CmVideoView
-        android:id="@+id/cm_video_player"
+
+    <VideoView
+        android:id="@+id/videoplayer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_centerInParent="true"/>
     <FrameLayout
-        android:id="@+id/topControl"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-        <include layout="@layout/include_layout_video_top_control"/>
-    </FrameLayout>
-    <FrameLayout
         android:id="@+id/bottomControl"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true">
+        android:layout_alignParentBottom="true"
+        android:visibility="gone">
         <include layout="@layout/include_layout_video_bottom_control"/>
 
     </FrameLayout>

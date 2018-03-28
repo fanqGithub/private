@@ -1,12 +1,15 @@
 package com.commai.commaplayer.notification;
 
+import android.annotation.TargetApi;
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.os.Build;
 import android.support.v4.app.NotificationCompat;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,6 +34,7 @@ import java.util.List;
 
 public class Notifier {
     private static final int NOTIFICATION_ID = 0;
+    private static final String CHANNELID="com.comma.player";
     private MusicPlayService playService;
     private NotificationManager notificationManager;
 
@@ -67,6 +71,7 @@ public class Notifier {
     }
 
     public void cancelAll() {
+
         notificationManager.cancelAll();
     }
 
@@ -78,9 +83,28 @@ public class Notifier {
         intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
+        if (Build.VERSION.SDK_INT >=Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(CHANNELID, "Commaai", NotificationManager.IMPORTANCE_DEFAULT);
+            //是否在桌面icon右上角展示小红点
+            channel.enableLights(true);
+            //小红点颜色
+            channel.setLightColor(Color.RED);
+            //是否在长按桌面图标时显示此渠道的通知
+            channel.setShowBadge(true);
+            notificationManager.createNotificationChannel(channel);
+
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(context,CHANNELID)
+                    .setTicker("CommaPlayer正在播放")
+                    .setContentIntent(pendingIntent)
+                    .setSmallIcon(R.mipmap.ic_music_default)
+                    .setOngoing(true)
+                    .setCustomBigContentView(getRemoteViews(context, music, isPlaying));
+            return builder.build();
+        }
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context,null)
+                .setTicker("CommaPlayer正在播放")
                 .setContentIntent(pendingIntent)
-                .setSmallIcon(R.drawable.ic_record_3)
+                .setSmallIcon(R.mipmap.ic_music_default)
                 .setOngoing(true)
                 .setCustomBigContentView(getRemoteViews(context, music, isPlaying));
         return builder.build();
@@ -91,7 +115,7 @@ public class Notifier {
         String title = music.getTitle();
         String subtitle =music.getArtist()+" - "+music.getAlbum();
         RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.notification);
-        Bitmap bitmap=loader.getBitmapImgByUrl(music.getPath());
+        Bitmap bitmap=loader.getBitmap(music.getPath());
         if (bitmap != null) {
             remoteViews.setImageViewBitmap(R.id.noti_img, bitmap);
         } else {

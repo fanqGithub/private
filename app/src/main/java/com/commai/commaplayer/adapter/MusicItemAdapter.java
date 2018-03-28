@@ -47,7 +47,19 @@ public class MusicItemAdapter extends RecyclerView.Adapter<MusicItemAdapter.Musi
         long size = list.get(position).getSize()/1024/1024;
         int minute = list.get(position).getDuration()/1000/60;
         int second = list.get(position).getDuration()/1000%60;
-        holder.info.setText("时长: " + minute + ":" + second);
+        String showM="";
+        String showS="";
+        if (minute<10){
+            showM="0"+minute;
+        }else {
+            showM=minute+"";
+        }
+        if (second<10){
+            showS="0"+second;
+        }else {
+            showS=second+"";
+        }
+        holder.info.setText("时长: " + showM + ":" + showS);
         holder.artist_alum.setText(item.getArtist()+"——"+item.getAlbum());
         holder.itemView.setTag(position);
     }

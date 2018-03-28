@@ -20,29 +20,27 @@
         android:layout_gravity="center"
         android:layout_weight="1.0"
         android:orientation="vertical"
-        android:paddingBottom="2.0dp"
-        android:paddingLeft="13.0dp"
-        android:paddingTop="2.0dp">
-        <LinearLayout
+        android:padding="5dp">
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
             <TextView
                 android:id="@+id/noti_title"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:layout_toLeftOf="@+id/cancel_noti"
                 android:ellipsize="end"
                 android:fadingEdge="horizontal"
                 android:maxLines="1"
-                android:textAppearance="@android:style/TextAppearance.StatusBar.EventContent.Title"/>
+                />
             <ImageView
                 android:id="@+id/cancel_noti"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@drawable/ic_close_black_24dp"
-                android:layout_gravity="right"/>
-        </LinearLayout>
+                android:layout_alignParentRight="true"/>
+        </RelativeLayout>
 
         <TextView
             android:id="@+id/noti_alubm"
@@ -64,7 +62,8 @@
                 android:layout_weight="1"
                 android:src="@drawable/ic_skip_previous_black_24dp"
                 android:contentDescription="@null"
-                android:scaleType="center"/>
+                android:scaleType="center"
+                android:clickable="true"/>
             <ImageView
                 android:id="@+id/noti_play_pause"
                 android:layout_width="0dp"
@@ -72,7 +71,8 @@
                 android:layout_weight="1"
                 android:src="@drawable/play_bar_btn_play_pause_selector"
                 android:contentDescription="@null"
-                android:scaleType="center"/>
+                android:scaleType="center"
+                android:clickable="true"/>
             <ImageView
                 android:id="@+id/noti_next"
                 android:layout_width="0dp"
@@ -80,7 +80,8 @@
                 android:layout_weight="1"
                 android:src="@drawable/ic_skip_next_black_24dp"
                 android:contentDescription="@null"
-                android:scaleType="center" />
+                android:scaleType="center"
+                android:clickable="true"/>
 
         </LinearLayout>
     </LinearLayout>

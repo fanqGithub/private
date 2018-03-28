@@ -28,6 +28,11 @@
             </intent-filter>
         </activity>
         <activity android:name=".activity.PlayerActivity" />
+        <activity android:name=".activity.CmVideoViewActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"/>
+
+        <activity android:name=".activity.CustomVideoViewActivity"
+            android:screenOrientation="landscape"/>
 
         <service android:name=".service.MusicPlayService" />
 

@@ -67,29 +67,12 @@ public class ImageLoader {
         }
     }
 
-    public Bitmap getBitmapImgByUrl(String url){
-        Bitmap bitmap=null;
-        if (type.equals("none")) {
-            bitmap = memoryCache.get(url);
-        }
-        if (bitmap!=null){
-            return bitmap;
-        }else {
-            bitmap=BitmapFactory.decodeResource(Resources.getSystem(), R.mipmap.ic_music_default);
-        }
-        return bitmap;
-    }
-
-    public void setViewBgImg(String url,View view){
-
-    }
-
     private void queuePhoto(String url, ImageView imageView) {
         PhotoToLoad p = new PhotoToLoad(url, imageView);
         executorService.submit(new PhotosLoader(p));
     }
 
-    private Bitmap getBitmap(String url) {
+    public Bitmap getBitmap(String url) {
         if (url == null) {
             return BitmapFactory.decodeResource(Resources.getSystem(), R.mipmap.ic_music_default);
         } else if (url.contains("all_playlist") || url.contains("folder")) {

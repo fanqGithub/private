@@ -73,10 +73,9 @@ public class MediaUtil {
                         new String[]{MediaStore.Video.Thumbnails.DATA, MediaStore.Video.Thumbnails.VIDEO_ID},
                         selection, selectionArgs, null);
                 if(thumbCursor.moveToFirst()){
-                    videoBean.setThumbImgPath(cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Video.Thumbnails.DATA)));
+                    videoBean.setThumbImgPath(thumbCursor.getString(thumbCursor.getColumnIndexOrThrow(MediaStore.Video.Thumbnails.DATA)));
 
                 }
-                videoBean.setThumbImgPath(cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Video.Thumbnails.DATA)));
                 videoItemLis.add(videoBean);
             }
         }

@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.commai.commaplayer.Entity.AudioItem;
 import com.commai.commaplayer.Entity.VideoItem;
 import com.commai.commaplayer.R;
@@ -43,10 +44,22 @@ public class VideoItemAdapter extends RecyclerView.Adapter<VideoItemAdapter.Vide
         long size = item.getSize()/1024/1024;
         int minute = item.getDuration()/1000/60;
         int second = item.getDuration()/1000%60;
+        String showM="";
+        String showS="";
+        if (minute<10){
+            showM="0"+minute;
+        }else {
+            showM=minute+"";
+        }
+        if (second<10){
+            showS="0"+second;
+        }else {
+            showS=second+"";
+        }
         holder.name.setText(item.getName());
-        holder.info.setText("时长："+minute+":"+second+"  大小："+size+"M");
+        holder.info.setText("时长："+showM+":"+showS+"  大小："+size+"M");
         holder.itemView.setTag(position);
-//        Glide.with(mContext).load(item.getThumbImgPath()).into(holder.thumbImg);
+        Glide.with(mContext).load(item.getThumbImgPath()).into(holder.thumbImg);
     }
 
     @Override

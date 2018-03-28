@@ -18,6 +18,8 @@ import com.commai.commaplayer.Entity.AudioItem;
 import com.commai.commaplayer.Entity.VideoItem;
 import com.commai.commaplayer.MainActivity;
 import com.commai.commaplayer.R;
+import com.commai.commaplayer.activity.CmVideoViewActivity;
+import com.commai.commaplayer.activity.CustomVideoViewActivity;
 import com.commai.commaplayer.activity.PlayerActivity;
 import com.commai.commaplayer.adapter.MusicItemAdapter;
 import com.commai.commaplayer.adapter.VideoItemAdapter;
@@ -56,8 +58,9 @@ public class LocalVideoFragment extends BaseFragment {
             @Override
             public boolean onClick(RecyclerView parent, View view, int position, long id) {
                 if (position >= 0) {
-                    Intent intent=new Intent(getContext(), PlayerActivity.class);
+                    Intent intent=new Intent(getContext(), CmVideoViewActivity.class);
                     intent.putExtra("mediaPath",MainActivity.videoItemList.get(position).getPath());
+                    intent.putExtra("videoTitle",MainActivity.videoItemList.get(position).getName());
                     startActivity(intent);
                 }
                 return true;
