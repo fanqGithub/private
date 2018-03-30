@@ -11,7 +11,7 @@ import com.commai.commaplayer.base.BaseFragment;
 
 /**
  * Created by fanqi on 2018/3/16.
- * Description:
+ * Description:包括最近播放历史记录，自定义的播放列表
  */
 
 public class SelfPlayListFragment extends BaseFragment {
