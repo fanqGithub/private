@@ -27,7 +27,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activity.PlayerActivity" />
+        <activity android:name=".activity.IjkPlayerActivity" />
         <activity android:name=".activity.CmVideoViewActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"/>
 

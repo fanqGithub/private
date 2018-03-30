@@ -23,7 +23,7 @@ public class SelfPlayListFragment extends BaseFragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view=inflater.inflate(R.layout.fragment_video,container,false);
+        View view=inflater.inflate(R.layout.fragment_play_list_all,container,false);
         return view;
     }
 }

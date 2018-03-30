@@ -7,4 +7,6 @@
     <color name="white">#ffffff</color>
     <color name="bg_gray">#88000000</color>
     <color name="bg_black">#000000</color>
+
+    <color name="bg_gray01">#F5F5F5</color>
 </resources>
