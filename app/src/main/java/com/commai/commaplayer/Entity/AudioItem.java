@@ -1,5 +1,7 @@
 package com.commai.commaplayer.Entity;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.text.TextUtils;
 
 /**
@@ -7,7 +9,7 @@ import android.text.TextUtils;
  * Description:
  */
 
-public class AudioItem {
+public class AudioItem implements Parcelable {
 
     private int songId;
 
@@ -35,6 +37,7 @@ public class AudioItem {
 
     private String album;
 
+    private boolean isCheck;
 
     public String getName() {
         return name;
@@ -100,6 +103,14 @@ public class AudioItem {
         this.songId = songId;
     }
 
+    public boolean isCheck() {
+        return isCheck;
+    }
+
+    public void setCheck(boolean check) {
+        isCheck = check;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof AudioItem)) {
@@ -122,4 +133,49 @@ public class AudioItem {
     public String toString() {
         return "[Audio name="+name+" ; path="+path+" artist="+artist+" albumid"+album_id +" title"+title+" ]";
     }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(this.songId);
+        dest.writeString(this.name);
+        dest.writeString(this.artist);
+        dest.writeString(this.path);
+        dest.writeInt(this.duration);
+        dest.writeLong(this.size);
+        dest.writeInt(this.album_id);
+        dest.writeString(this.title);
+        dest.writeString(this.album);
+    }
+
+    public AudioItem() {
+    }
+
+    protected AudioItem(Parcel in) {
+        this.songId = in.readInt();
+        this.name = in.readString();
+        this.artist = in.readString();
+        this.path = in.readString();
+        this.duration = in.readInt();
+        this.size = in.readLong();
+        this.album_id = in.readInt();
+        this.title = in.readString();
+        this.album = in.readString();
+    }
+
+    public static final Parcelable.Creator<AudioItem> CREATOR = new Parcelable.Creator<AudioItem>() {
+        @Override
+        public AudioItem createFromParcel(Parcel source) {
+            return new AudioItem(source);
+        }
+
+        @Override
+        public AudioItem[] newArray(int size) {
+            return new AudioItem[size];
+        }
+    };
 }

@@ -7,11 +7,19 @@ import android.support.annotation.Nullable;
 
 import com.commai.commaplayer.R;
 
+/**
+ *
+ * @author commai
+ * 播放相关存储文件
+ *
+ */
 public class Preferences {
     private static final String PLAY_POSITION = "play_position";
     private static final String PLAY_MODE = "play_mode";
     private static final String SPLASH_URL = "splash_url";
     private static final String NIGHT_MODE = "night_mode";
+
+    private static final String RECENT_PLAY_LIST="recent_play_list";
 
     private static Context sContext;
 

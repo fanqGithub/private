@@ -8,13 +8,18 @@ import android.os.Handler;
 import android.os.Looper;
 
 import com.commai.commaplayer.Entity.AudioItem;
+import com.commai.commaplayer.Entity.RecentPlay;
 import com.commai.commaplayer.enums.PlayModeEnum;
+import com.commai.commaplayer.greendao.dao.DBManager;
+import com.commai.commaplayer.greendao.dao.RecentPlayDao;
 import com.commai.commaplayer.notification.Notifier;
 import com.commai.commaplayer.shareprefrence.Preferences;
 import com.commai.commaplayer.utils.MediaUtil;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
@@ -114,7 +119,21 @@ public class MusicPlayer {
 
         setPlayPosition(position);
         AudioItem music = getPlayMusic();
-
+        RecentPlay playItem=new RecentPlay();
+        playItem.setMediaName(music.getTitle());
+        playItem.setMediaPath(music.getPath());
+        playItem.setArtist(music.getArtist());
+        playItem.setDuration(music.getDuration());
+        playItem.setSize(music.getSize());
+        playItem.setMediaType("audio");
+        playItem.setPlayTime(new SimpleDateFormat("yyyyMMddhhmmss").format(new Date()));
+        RecentPlay existItem=DBManager.get().getRecentPlayDao().queryBuilder().where(RecentPlayDao.Properties.MediaName.eq(music.getTitle())).unique();
+        if (existItem==null) {
+            DBManager.get().getRecentPlayDao().insert(playItem);
+        }else {
+            playItem.setId(existItem.getId());
+            DBManager.get().getRecentPlayDao().update(playItem);
+        }
         try {
             mediaPlayer.reset();
             mediaPlayer.setDataSource(music.getPath());

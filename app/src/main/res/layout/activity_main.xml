@@ -10,8 +10,29 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context="com.commai.commaplayer.MainActivity">
+    <FrameLayout
+        android:id="@+id/choose_top_view"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:background="@color/colorblue"
+        android:visibility="gone">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:orientation="horizontal">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="取消"
+                android:textColor="@color/white"
+                android:layout_gravity="center"
+                android:gravity="center"/>
 
+        </LinearLayout>
+    </FrameLayout>
     <LinearLayout
+        android:id="@+id/toggle_view"
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:orientation="horizontal"
@@ -32,7 +53,7 @@
             app:scv_TextNormalColor="@color/white"
             app:scv_TextSelectedColor="@color/colorblue"/>
     </LinearLayout>
-    <android.support.v4.view.ViewPager
+    <com.commai.commaplayer.widget.ControlViewPager
         android:id="@+id/vp_content"
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -118,6 +139,28 @@
 
             </android.support.v7.widget.Toolbar>
 
+        </FrameLayout>
+        <FrameLayout
+            android:id="@+id/choose_bottom_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:orientation="horizontal"
+                android:background="@color/colorblue">
+                <TextView
+                    android:id="@+id/tv_add_play_list"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:text="添加到"
+                    android:textColor="@color/white"
+                    android:drawableTop="@drawable/ic_add_circle_white_24dp"/>
+            </LinearLayout>
         </FrameLayout>
     </LinearLayout>
 </RelativeLayout>

@@ -5,6 +5,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -25,6 +26,7 @@ public class MusicItemAdapter extends RecyclerView.Adapter<MusicItemAdapter.Musi
     private Context mContext=null;
     private List<AudioItem> list=null;
     private ImageLoader imageLoader;
+    private boolean isShowCheckMe=false;
 
     public MusicItemAdapter(Context context,List<AudioItem> audioItems){
         this.list=audioItems;
@@ -61,7 +63,23 @@ public class MusicItemAdapter extends RecyclerView.Adapter<MusicItemAdapter.Musi
         }
         holder.info.setText("时长: " + showM + ":" + showS);
         holder.artist_alum.setText(item.getArtist()+"——"+item.getAlbum());
+        if (isShowCheckMe){
+            holder.checkMe.setVisibility(View.VISIBLE);
+        }else {
+            holder.checkMe.setVisibility(View.GONE);
+        }
+        holder.checkMe.setChecked(item.isCheck());
         holder.itemView.setTag(position);
+    }
+
+    public void notifyCheckMeShow(){
+        this.isShowCheckMe=true;
+        notifyDataSetChanged();
+    }
+
+    public void notifyCheckMeHidel(){
+        this.isShowCheckMe=false;
+        notifyDataSetChanged();
     }
 
 
@@ -78,12 +96,14 @@ public class MusicItemAdapter extends RecyclerView.Adapter<MusicItemAdapter.Musi
         TextView name;
         TextView info;
         TextView artist_alum;
+        CheckBox checkMe;
         public MusicItemHolder(View itemView) {
             super(itemView);
             music_img=itemView.findViewById(R.id.music_img);
             name = itemView.findViewById(R.id.music_name);
             info = itemView.findViewById(R.id.detail_txt);
             artist_alum=itemView.findViewById(R.id.artist_alum);
+            checkMe=itemView.findViewById(R.id.checkme);
         }
     }
 }

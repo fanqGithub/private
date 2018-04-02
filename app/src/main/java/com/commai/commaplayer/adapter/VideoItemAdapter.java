@@ -58,8 +58,9 @@ public class VideoItemAdapter extends RecyclerView.Adapter<VideoItemAdapter.Vide
         }
         holder.name.setText(item.getName());
         holder.info.setText("时长："+showM+":"+showS+"  大小："+size+"M");
-        holder.itemView.setTag(position);
         Glide.with(mContext).load(item.getThumbImgPath()).into(holder.thumbImg);
+        holder.itemView.setTag(position);
+
     }
 
     @Override

@@ -1,11 +1,14 @@
 package com.commai.commaplayer.Entity;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 /**
  * Created by fanqi on 2018/3/14.
  * Description:
  */
 
-public class VideoItem {
+public class VideoItem implements Parcelable {
 
     //视频名称
     private String name;
@@ -61,4 +64,42 @@ public class VideoItem {
     public String toString() {
         return  "[Video name="+name+" ; path="+path+" size="+size+" thumb="+thumbImgPath+" ]";
     }
+
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(this.name);
+        dest.writeString(this.path);
+        dest.writeInt(this.duration);
+        dest.writeLong(this.size);
+        dest.writeString(this.thumbImgPath);
+    }
+
+    public VideoItem() {
+    }
+
+    protected VideoItem(Parcel in) {
+        this.name = in.readString();
+        this.path = in.readString();
+        this.duration = in.readInt();
+        this.size = in.readLong();
+        this.thumbImgPath = in.readString();
+    }
+
+    public static final Parcelable.Creator<VideoItem> CREATOR = new Parcelable.Creator<VideoItem>() {
+        @Override
+        public VideoItem createFromParcel(Parcel source) {
+            return new VideoItem(source);
+        }
+
+        @Override
+        public VideoItem[] newArray(int size) {
+            return new VideoItem[size];
+        }
+    };
 }

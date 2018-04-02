@@ -1,6 +1,7 @@
 package com.commai.commaplayer;
 
 import android.Manifest;
+import android.app.Dialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -23,11 +24,13 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.commai.commaplayer.Entity.AudioItem;
+import com.commai.commaplayer.Entity.RecentPlay;
 import com.commai.commaplayer.Entity.VideoItem;
 import com.commai.commaplayer.fragment.LocalMusicFragment;
 import com.commai.commaplayer.fragment.LocalVideoFragment;
 import com.commai.commaplayer.fragment.PlayingFragment;
 import com.commai.commaplayer.fragment.SelfPlayListFragment;
+import com.commai.commaplayer.greendao.dao.DBManager;
 import com.commai.commaplayer.service.MusicPlayService;
 import com.commai.commaplayer.service.MusicPlayer;
 import com.commai.commaplayer.service.OnPlayerEventListener;
@@ -35,7 +38,10 @@ import com.commai.commaplayer.shareprefrence.Preferences;
 import com.commai.commaplayer.utils.MediaUtil;
 import com.commai.commaplayer.utils.PermissionUtil;
 import com.commai.commaplayer.utils.imageLoader.ImageLoader;
+import com.commai.commaplayer.widget.ControlViewPager;
 import com.commai.commaplayer.widget.SegmentControl;
+
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements
     private LocalMusicFragment musicFragment=null;
     private LocalVideoFragment videoFragment=null;
     private SelfPlayListFragment selfPlayListFragment=null;
-    private ViewPager mVp;
+    private ControlViewPager mVp;
     private MyPageAdapter myPageAdapter;
 
     //底部播放控制相关
@@ -78,6 +84,12 @@ public class MainActivity extends AppCompatActivity implements
     private FrameLayout bottomSmallPalyer;
     private int lastplayposition=0;
 
+    //选择相关
+    private FrameLayout chooseTopView;
+    private FrameLayout chooseBottomView;
+    private LinearLayout toggleView;
+    private TextView tvAddPlayList;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,6 +105,10 @@ public class MainActivity extends AppCompatActivity implements
         playerControllerHome=(ImageView) findViewById(R.id.player_control_sp_home);
         playerNextMusic=findViewById(R.id.player_next_sp_home);
         mProgressBar=findViewById(R.id.pb_play_bar);
+        chooseTopView=findViewById(R.id.choose_top_view);
+        chooseBottomView=findViewById(R.id.choose_bottom_view);
+        toggleView=findViewById(R.id.toggle_view);
+        tvAddPlayList=findViewById(R.id.tv_add_play_list);
         lastplayposition = Preferences.getPlayPosition();
 
         bindService();
@@ -143,6 +159,7 @@ public class MainActivity extends AppCompatActivity implements
 
         playerControllerHome.setOnClickListener(this);
         playerNextMusic.setOnClickListener(this);
+        tvAddPlayList.setOnClickListener(this);
     }
 
     private void bindService() {
@@ -219,6 +236,10 @@ public class MainActivity extends AppCompatActivity implements
             case R.id.player_next_sp_home:
                 MusicPlayer.get().next();
                 break;
+            case R.id.tv_add_play_list:
+                //添加到播放列表
+
+                break;
             default:
                 break;
         }
@@ -256,6 +277,17 @@ public class MainActivity extends AppCompatActivity implements
                 MusicPlayer.get().addAndPlay(music);
                 showPlayingFragment();
             }
+
+            @Override
+            public void onItemLongPressCallBack(int position) {
+                //item长按，toggleview隐藏，choose_top_view显示，choose_bottom_view显示
+                mVp.setVpScrollAble(false);
+                toggleView.setVisibility(View.GONE);
+                bottomSmallPalyer.setVisibility(View.GONE);
+                chooseTopView.setVisibility(View.VISIBLE);
+                chooseBottomView.setVisibility(View.VISIBLE);
+
+            }
         });
     }
 
@@ -268,6 +300,7 @@ public class MainActivity extends AppCompatActivity implements
                         audioItemList= MediaUtil.scanAudios(MainActivity.this);
                         videoItemList= MediaUtil.scanVideos(MainActivity.this);
                         if (audioItemList.size()>0){
+                            bottomSmallPalyer.setVisibility(View.VISIBLE);
                             if (lastplayposition>audioItemList.size()){
                                 spTitleHome.setText(audioItemList.get(0).getTitle());
                                 imageLoader.DisplayImage(audioItemList.get(0).getPath(),spImgHome);
@@ -319,10 +352,25 @@ public class MainActivity extends AppCompatActivity implements
         isPlayFragmentShow = false;
     }
 
+    private void showAddToPlayListDialog(){
+        final Dialog dialog = new Dialog(this);
+        dialog.setContentView(R.layout.layout_dialog_add_to_play_list);
+        dialog.setTitle("添加到播放列表");
+    }
+
     @Override
     public void onBackPressed() {
         if (mPlayFragment != null && isPlayFragmentShow) {
             hidePlayingFragment();
+            return;
+        }
+        if (musicFragment!=null&&musicFragment.isMutiableCheckShow){
+            musicFragment.onKeyBackPress();
+            mVp.setVpScrollAble(true);
+            toggleView.setVisibility(View.VISIBLE);
+            bottomSmallPalyer.setVisibility(View.VISIBLE);
+            chooseTopView.setVisibility(View.GONE);
+            chooseBottomView.setVisibility(View.GONE);
             return;
         }
         super.onBackPressed();

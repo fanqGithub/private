@@ -2,6 +2,7 @@ package com.commai.commaplayer;
 
 import android.app.Application;
 
+import com.commai.commaplayer.greendao.dao.DBManager;
 import com.commai.commaplayer.shareprefrence.Preferences;
 
 /**
@@ -15,6 +16,7 @@ public class PlayerApplication extends Application {
     public void onCreate() {
         super.onCreate();
         Preferences.init(this);
+        DBManager.get().init(this);
     }
 
 }

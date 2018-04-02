@@ -48,6 +48,7 @@ public class MediaUtil {
                 musicBean.setTitle(cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)));
                 musicBean.setAlbum(cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM)));
                 musicBean.setSongId(cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)));
+                musicBean.setCheck(false);
                 musicList.add(musicBean);
             }
         }

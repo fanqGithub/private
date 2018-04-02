@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'org.greenrobot.greendao' // apply plugin
 
 android {
     compileSdkVersion 26
@@ -21,6 +22,18 @@ android {
     sourceSets.main {
         jniLibs.srcDirs = ['src/main/jniLibs']
     }
+    greendao {
+        //版本信息
+        schemaVersion 1
+        /**
+         * 输出dao的数据库操作实体类文件夹（相对路径 包名+自定义路径名称，包将创建于包名的直接路径下）
+         */
+        daoPackage 'com.commai.commaplayer.greendao.dao'
+        /**
+         * greenDao实体类包文件夹
+         */
+        targetGenDir 'src/main/java'
+    }
 }
 
 dependencies {
@@ -38,4 +51,5 @@ dependencies {
     annotationProcessor 'com.github.bumptech.glide:compiler:4.3.1'
     implementation 'com.jakewharton:butterknife:8.8.1'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
+    compile 'org.greenrobot:greendao:3.2.2' // add library
 }
