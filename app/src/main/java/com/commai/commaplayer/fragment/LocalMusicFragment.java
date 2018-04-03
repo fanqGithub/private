@@ -106,7 +106,10 @@ public class LocalMusicFragment extends BaseFragment implements MusicItemAdapter
         selected.setSize(item.getSize());
         selected.setDuration(item.getDuration());
         if (isChecked) {
-            MainActivity.selectedList.add(selected);
+            //需要判断原selectlist里面是否已经有了这个选项。
+            if (!MainActivity.selectedList.contains(selected)) {
+                MainActivity.selectedList.add(selected);
+            }
         }else {
             MainActivity.selectedList.remove(selected);
         }

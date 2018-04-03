@@ -257,6 +257,10 @@ public class MainActivity extends AppCompatActivity implements
                 break;
             case R.id.tv_add_play_list:
                 //添加到播放列表
+                if (selectedList.size()==0){
+                    Toast.makeText(MainActivity.this,"请填选择要添加的文件",Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 showAddToPlayListDialog();
                 break;
             case R.id.cancel_choose:
@@ -439,7 +443,9 @@ public class MainActivity extends AppCompatActivity implements
     private void resetView(){
         musicFragment.onKeyBackPress();
         selectedList.clear();
-        allPlayLists.getSelectedList().clear();
+        if (allPlayLists.getSelectedList()!=null) {
+            allPlayLists.getSelectedList().clear();
+        }
         mVp.setVpScrollAble(true);
         toggleView.setVisibility(View.VISIBLE);
         bottomSmallPalyer.setVisibility(View.VISIBLE);
