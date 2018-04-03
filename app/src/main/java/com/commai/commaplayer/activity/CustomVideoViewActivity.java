@@ -32,7 +32,7 @@ import butterknife.ButterKnife;
  * Created by fanqi on 2018/3/28.
  * Description:
  */
-
+@Deprecated
 public class CustomVideoViewActivity extends BaseActivity implements View.OnClickListener,View.OnTouchListener{
 
     @BindView(R.id.videoplayer)

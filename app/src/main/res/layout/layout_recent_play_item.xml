@@ -1,20 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+<android.support.v7.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:padding="10dp"
-    android:gravity="center">
-
-    <ImageView
-        android:id="@+id/media_img"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:src="@color/colorblue"/>
-    <TextView
-        android:id="@+id/media_title"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:cardBackgroundColor="#ffffff"
+    app:cardCornerRadius="5dp"
+    app:cardElevation="5dp"
+    android:layout_margin="6dp">
+    <LinearLayout
+        android:orientation="vertical"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="起风了"
-        android:layout_marginTop="5dp"/>
-</LinearLayout>
+        android:padding="10dp"
+        android:gravity="center">
+
+        <ImageView
+            android:id="@+id/media_img"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:src="@color/colorblue"/>
+        <TextView
+            android:id="@+id/media_title"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:text="起风了"
+            android:maxLines="2"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:layout_marginTop="5dp"/>
+    </LinearLayout>
+</android.support.v7.widget.CardView>

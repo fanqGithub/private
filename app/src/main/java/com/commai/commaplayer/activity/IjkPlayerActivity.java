@@ -15,6 +15,7 @@ import tv.danmaku.ijk.media.player.IjkMediaPlayer;
  * Description:
  */
 
+@Deprecated
 public class IjkPlayerActivity extends BaseActivity {
 
     private IjkVideoView ijkVideoView;

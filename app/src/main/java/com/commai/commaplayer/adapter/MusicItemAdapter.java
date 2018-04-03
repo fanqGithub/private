@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -14,7 +15,9 @@ import com.commai.commaplayer.R;
 import com.commai.commaplayer.utils.MediaUtil;
 import com.commai.commaplayer.utils.imageLoader.ImageLoader;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by fanqi on 2018/3/15.
@@ -27,11 +30,15 @@ public class MusicItemAdapter extends RecyclerView.Adapter<MusicItemAdapter.Musi
     private List<AudioItem> list=null;
     private ImageLoader imageLoader;
     private boolean isShowCheckMe=false;
+    private OnMyCheckChangeListener mListener;
+
+    private Map<Integer, Boolean> map = new HashMap<>();
 
     public MusicItemAdapter(Context context,List<AudioItem> audioItems){
         this.list=audioItems;
         this.mContext=context;
         this.imageLoader=new ImageLoader(mContext);
+        initMap();
     }
 
     @Override
@@ -43,12 +50,13 @@ public class MusicItemAdapter extends RecyclerView.Adapter<MusicItemAdapter.Musi
 
     @Override
     public void onBindViewHolder(MusicItemHolder holder, int position) {
+        final int mPosition=position;
         AudioItem item=list.get(position);
-        imageLoader.DisplayImage(list.get(position).getPath(),holder.music_img);
-        holder.name.setText(list.get(position).getTitle());
-        long size = list.get(position).getSize()/1024/1024;
-        int minute = list.get(position).getDuration()/1000/60;
-        int second = list.get(position).getDuration()/1000%60;
+        imageLoader.DisplayImage(item.getPath(),holder.music_img);
+        holder.name.setText(item.getTitle());
+        long size = item.getSize()/1024/1024;
+        int minute = item.getDuration()/1000/60;
+        int second = item.getDuration()/1000%60;
         String showM="";
         String showS="";
         if (minute<10){
@@ -61,6 +69,7 @@ public class MusicItemAdapter extends RecyclerView.Adapter<MusicItemAdapter.Musi
         }else {
             showS=second+"";
         }
+        holder.checkMe.setTag(position);
         holder.info.setText("时长: " + showM + ":" + showS);
         holder.artist_alum.setText(item.getArtist()+"——"+item.getAlbum());
         if (isShowCheckMe){
@@ -68,7 +77,19 @@ public class MusicItemAdapter extends RecyclerView.Adapter<MusicItemAdapter.Musi
         }else {
             holder.checkMe.setVisibility(View.GONE);
         }
-        holder.checkMe.setChecked(item.isCheck());
+        holder.checkMe.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                map.put(mPosition, isChecked);
+                if (mListener!=null){
+                    mListener.checkChanged(mPosition,isChecked);
+                }
+            }
+        });
+        if (map.get(position) == null) {
+            map.put(position, false);
+        }
+        holder.checkMe.setChecked(map.get(position));
         holder.itemView.setTag(position);
     }
 
@@ -91,6 +112,16 @@ public class MusicItemAdapter extends RecyclerView.Adapter<MusicItemAdapter.Musi
         return 0;
     }
 
+    private void initMap() {
+        for (int i = 0; i < list.size(); i++) {
+            map.put(i, false);
+        }
+    }
+
+    public  Map<Integer, Boolean> getSelectedData() {
+        return map;
+    }
+
     class MusicItemHolder  extends RecyclerView.ViewHolder{
         ImageView music_img;
         TextView name;
@@ -105,5 +136,13 @@ public class MusicItemAdapter extends RecyclerView.Adapter<MusicItemAdapter.Musi
             artist_alum=itemView.findViewById(R.id.artist_alum);
             checkMe=itemView.findViewById(R.id.checkme);
         }
+    }
+
+    public interface OnMyCheckChangeListener{
+        void checkChanged(int position,boolean isChecked);
+    }
+
+    public void setCheckChangeListener(OnMyCheckChangeListener listener){
+        this.mListener=listener;
     }
 }

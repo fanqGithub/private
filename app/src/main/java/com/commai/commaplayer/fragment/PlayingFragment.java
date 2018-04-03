@@ -94,7 +94,6 @@ public class PlayingFragment extends BaseFragment implements SeekBar.OnSeekBarCh
         ivPrev.setOnClickListener(this);
         ivNext.setOnClickListener(this);
         sbProgress.setOnSeekBarChangeListener(this);
-//        sbVolume.setOnSeekBarChangeListener(this);
         return view;
     }
 
@@ -117,8 +116,6 @@ public class PlayingFragment extends BaseFragment implements SeekBar.OnSeekBarCh
 
     private void initVolume() {
         mAudioManager = (AudioManager) getContext().getSystemService(Context.AUDIO_SERVICE);
-//        sbVolume.setMax(mAudioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC));
-//        sbVolume.setProgress(mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC));
     }
 
     private void initPlayMode() {
@@ -209,10 +206,6 @@ public class PlayingFragment extends BaseFragment implements SeekBar.OnSeekBarCh
                 seekBar.setProgress(0);
             }
         }
-//        else if (seekBar == sbVolume) {
-//            mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, seekBar.getProgress(),
-//                    AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE);
-//        }
     }
 
     private void onChangeImpl(AudioItem music) {
@@ -222,7 +215,6 @@ public class PlayingFragment extends BaseFragment implements SeekBar.OnSeekBarCh
 
         playging_music_title.setText(music.getTitle());
         imageLoader.DisplayImage(music.getPath(),playing_music_img);
-//        tvArtist.setText(music.getArtist());
         sbProgress.setProgress((int) MusicPlayer.get().getAudioPosition());
         sbProgress.setSecondaryProgress(0);
         sbProgress.setMax((int) music.getDuration());
@@ -262,7 +254,6 @@ public class PlayingFragment extends BaseFragment implements SeekBar.OnSeekBarCh
                 break;
             case SINGLE:
                 mode = PlayModeEnum.LOOP;
-//                ToastUtils.show(R.string.mode_loop);
                 break;
             default:
                 break;
@@ -273,8 +264,6 @@ public class PlayingFragment extends BaseFragment implements SeekBar.OnSeekBarCh
 
     private void onBackPressed() {
         getActivity().onBackPressed();
-//        img_back.setEnabled(false);
-//        handler.postDelayed(() -> img_back.setEnabled(true), 300);
     }
 
 
@@ -283,7 +272,6 @@ public class PlayingFragment extends BaseFragment implements SeekBar.OnSeekBarCh
     private BroadcastReceiver mVolumeReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-//            sbVolume.setProgress(mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC));
         }
     };
 

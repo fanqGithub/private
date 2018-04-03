@@ -14,23 +14,33 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.commai.commaplayer.Entity.AllPlayLists;
 import com.commai.commaplayer.Entity.AudioItem;
 import com.commai.commaplayer.Entity.RecentPlay;
+import com.commai.commaplayer.Entity.SelectedMediaItem;
 import com.commai.commaplayer.Entity.VideoItem;
+import com.commai.commaplayer.adapter.AddPlayListAdapter;
 import com.commai.commaplayer.fragment.LocalMusicFragment;
 import com.commai.commaplayer.fragment.LocalVideoFragment;
 import com.commai.commaplayer.fragment.PlayingFragment;
 import com.commai.commaplayer.fragment.SelfPlayListFragment;
+import com.commai.commaplayer.greendao.bean.PlayListBean;
 import com.commai.commaplayer.greendao.dao.DBManager;
+import com.commai.commaplayer.greendao.dao.PlayListBeanDao;
 import com.commai.commaplayer.service.MusicPlayService;
 import com.commai.commaplayer.service.MusicPlayer;
 import com.commai.commaplayer.service.OnPlayerEventListener;
@@ -40,6 +50,7 @@ import com.commai.commaplayer.utils.PermissionUtil;
 import com.commai.commaplayer.utils.imageLoader.ImageLoader;
 import com.commai.commaplayer.widget.ControlViewPager;
 import com.commai.commaplayer.widget.SegmentControl;
+import com.google.gson.Gson;
 
 import org.w3c.dom.Text;
 
@@ -89,6 +100,12 @@ public class MainActivity extends AppCompatActivity implements
     private FrameLayout chooseBottomView;
     private LinearLayout toggleView;
     private TextView tvAddPlayList;
+    private TextView tvCancel;
+
+    //选中item，加入播放列表相关
+    public static List<SelectedMediaItem> selectedList=new ArrayList<>();
+    private AllPlayLists allPlayLists;
+    private Gson gson;
 
 
     @Override
@@ -109,8 +126,12 @@ public class MainActivity extends AppCompatActivity implements
         chooseBottomView=findViewById(R.id.choose_bottom_view);
         toggleView=findViewById(R.id.toggle_view);
         tvAddPlayList=findViewById(R.id.tv_add_play_list);
-        lastplayposition = Preferences.getPlayPosition();
+        tvCancel=findViewById(R.id.cancel_choose);
 
+        gson=new Gson();
+        allPlayLists=new AllPlayLists();
+
+        lastplayposition = Preferences.getPlayPosition();
         bindService();
         MusicPlayer.get().addOnPlayEventListener(this);
 
@@ -147,7 +168,6 @@ public class MainActivity extends AppCompatActivity implements
 
             }
         });
-
         segment_ct.setOnSegmentChangedListener(new SegmentControl.OnSegmentChangedListener() {
             @Override
             public void onSegmentChanged(int newSelectedIndex) {
@@ -155,11 +175,12 @@ public class MainActivity extends AppCompatActivity implements
             }
         });
         mVp.setCurrentItem(0);
-        spHomePlayerBar.setOnClickListener(this);
 
+        spHomePlayerBar.setOnClickListener(this);
         playerControllerHome.setOnClickListener(this);
         playerNextMusic.setOnClickListener(this);
         tvAddPlayList.setOnClickListener(this);
+        tvCancel.setOnClickListener(this);
     }
 
     private void bindService() {
@@ -204,13 +225,11 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onPlayerStart() {
         playerControllerHome.setSelected(true);
-//        Toast.makeText(this,"播放了",Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onPlayerPause() {
         playerControllerHome.setSelected(false);
-//        Toast.makeText(this,"暂停了",Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -238,7 +257,10 @@ public class MainActivity extends AppCompatActivity implements
                 break;
             case R.id.tv_add_play_list:
                 //添加到播放列表
-
+                showAddToPlayListDialog();
+                break;
+            case R.id.cancel_choose:
+                resetView();
                 break;
             default:
                 break;
@@ -356,6 +378,46 @@ public class MainActivity extends AppCompatActivity implements
         final Dialog dialog = new Dialog(this);
         dialog.setContentView(R.layout.layout_dialog_add_to_play_list);
         dialog.setTitle("添加到播放列表");
+        allPlayLists.setSelectedList(selectedList);
+        Log.d("Tag_selected",allPlayLists.getSelectedList().size()+"");
+        Log.d("Tag_selected_obj", gson.toJson(allPlayLists));
+
+        RecyclerView playListView=dialog.findViewById(R.id.play_list);
+        LinearLayoutManager manager = new LinearLayoutManager(this);
+        manager.setOrientation(LinearLayout.VERTICAL);
+        playListView.setLayoutManager(manager);
+        List<PlayListBean> listBeans=DBManager.get().getPlayListBeanDao().loadAll();
+        AddPlayListAdapter addPlayListAdapter=new AddPlayListAdapter(this,listBeans);
+        playListView.setAdapter(addPlayListAdapter);
+
+        final EditText editTextNewList=dialog.findViewById(R.id.new_playlist_name);
+        ImageView confrimButtom=dialog.findViewById(R.id.confirm_button);
+
+        confrimButtom.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (TextUtils.isEmpty(editTextNewList.getText())){
+                    Toast.makeText(MainActivity.this,"请填写列表名",Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                PlayListBean bean=new PlayListBean();
+                bean.setPlayListName(editTextNewList.getText().toString());
+                bean.setPlayListJson(gson.toJson(allPlayLists));
+                PlayListBean existBean=DBManager.get().getPlayListBeanDao().queryBuilder().where(PlayListBeanDao.Properties.PlayListName.eq(editTextNewList.getText().toString())).unique();
+                if (existBean==null) {
+                    DBManager.get().getPlayListBeanDao().insert(bean);
+                }else {
+                    bean.setId(existBean.getId());
+                    DBManager.get().getPlayListBeanDao().update(bean);
+                }
+                Toast.makeText(MainActivity.this,"已添加至"+editTextNewList.getText().toString()+"列表中",Toast.LENGTH_SHORT).show();
+                dialog.dismiss();
+                resetView();
+            }
+        });
+
+        dialog.show();
+
     }
 
     @Override
@@ -365,15 +427,24 @@ public class MainActivity extends AppCompatActivity implements
             return;
         }
         if (musicFragment!=null&&musicFragment.isMutiableCheckShow){
-            musicFragment.onKeyBackPress();
-            mVp.setVpScrollAble(true);
-            toggleView.setVisibility(View.VISIBLE);
-            bottomSmallPalyer.setVisibility(View.VISIBLE);
-            chooseTopView.setVisibility(View.GONE);
-            chooseBottomView.setVisibility(View.GONE);
+            resetView();
             return;
         }
         super.onBackPressed();
+    }
+
+    /**
+     * 重置头部和底部的视图
+     */
+    private void resetView(){
+        musicFragment.onKeyBackPress();
+        selectedList.clear();
+        allPlayLists.getSelectedList().clear();
+        mVp.setVpScrollAble(true);
+        toggleView.setVisibility(View.VISIBLE);
+        bottomSmallPalyer.setVisibility(View.VISIBLE);
+        chooseTopView.setVisibility(View.GONE);
+        chooseBottomView.setVisibility(View.GONE);
     }
 
 

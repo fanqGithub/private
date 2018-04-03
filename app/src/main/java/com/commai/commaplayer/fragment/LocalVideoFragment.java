@@ -11,12 +11,20 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
+import com.commai.commaplayer.Entity.RecentPlay;
+import com.commai.commaplayer.Entity.VideoItem;
 import com.commai.commaplayer.MainActivity;
 import com.commai.commaplayer.R;
 import com.commai.commaplayer.activity.CmVideoViewActivity;
 import com.commai.commaplayer.adapter.VideoItemAdapter;
 import com.commai.commaplayer.base.BaseFragment;
+import com.commai.commaplayer.greendao.dao.DBManager;
+import com.commai.commaplayer.greendao.dao.RecentPlayDao;
 import com.commai.commaplayer.listener.ClickItemTouchListener;
+import com.commai.commaplayer.threadpool.ThreadPoolProxyFactory;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Created by fanqi on 2018/3/16.
@@ -46,9 +54,30 @@ public class LocalVideoFragment extends BaseFragment {
             @Override
             public boolean onClick(RecyclerView parent, View view, int position, long id) {
                 if (position >= 0) {
+                    final VideoItem videoItem=MainActivity.videoItemList.get(position);
+                    ThreadPoolProxyFactory.getNormalThreadPoolProxy().execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            RecentPlay playItem=new RecentPlay();
+                            playItem.setMediaName(videoItem.getName());
+                            playItem.setMediaPath(videoItem.getPath());
+                            playItem.setDuration(videoItem.getDuration());
+                            playItem.setSize(videoItem.getSize());
+                            playItem.setMediaType("video");
+                            playItem.setThumbImgPath(videoItem.getThumbImgPath());
+                            playItem.setPlayTime(new SimpleDateFormat("yyyyMMddhhmmss").format(new Date()));
+                            RecentPlay existItem= DBManager.get().getRecentPlayDao().queryBuilder().where(RecentPlayDao.Properties.MediaName.eq(videoItem.getName())).unique();
+                            if (existItem==null) {
+                                DBManager.get().getRecentPlayDao().insert(playItem);
+                            }else {
+                                playItem.setId(existItem.getId());
+                                DBManager.get().getRecentPlayDao().update(playItem);
+                            }
+                        }
+                    });
                     Intent intent=new Intent(getContext(), CmVideoViewActivity.class);
-                    intent.putExtra("mediaPath",MainActivity.videoItemList.get(position).getPath());
-                    intent.putExtra("videoTitle",MainActivity.videoItemList.get(position).getName());
+                    intent.putExtra("mediaPath",videoItem.getPath());
+                    intent.putExtra("videoTitle",videoItem.getName());
                     startActivity(intent);
                 }
                 return true;
@@ -74,4 +103,5 @@ public class LocalVideoFragment extends BaseFragment {
             mediaListView.setAdapter(adapter);
         }
     }
+
 }

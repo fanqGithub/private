@@ -12,6 +12,7 @@ public class DBManager {
 
     private static final String DB_NAME = "comma_player.db";
     private RecentPlayDao recentPlayDao;
+    private PlayListBeanDao playListBeanDao;
 
     public static DBManager get() {
         return SingletonHolder.instance;
@@ -26,6 +27,7 @@ public class DBManager {
         Database db = helper.getWritableDb();
         DaoSession daoSession = new DaoMaster(db).newSession();
         recentPlayDao = daoSession.getRecentPlayDao();
+        playListBeanDao=daoSession.getPlayListBeanDao();
     }
 
     private DBManager() {
@@ -33,5 +35,9 @@ public class DBManager {
 
     public RecentPlayDao getRecentPlayDao() {
         return recentPlayDao;
+    }
+
+    public PlayListBeanDao getPlayListBeanDao(){
+        return playListBeanDao;
     }
 }

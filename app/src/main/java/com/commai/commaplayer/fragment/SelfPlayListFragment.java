@@ -13,8 +13,10 @@ import android.widget.TextView;
 
 import com.commai.commaplayer.Entity.RecentPlay;
 import com.commai.commaplayer.R;
+import com.commai.commaplayer.adapter.PlayListAdapter;
 import com.commai.commaplayer.adapter.RecentPlayAdapter;
 import com.commai.commaplayer.base.BaseFragment;
+import com.commai.commaplayer.greendao.bean.PlayListBean;
 import com.commai.commaplayer.greendao.dao.DBManager;
 import com.commai.commaplayer.listener.ClickItemTouchListener;
 
@@ -49,6 +51,10 @@ public class SelfPlayListFragment extends BaseFragment {
 
     private RecentPlayAdapter mAdapter=null;
 
+    private List<PlayListBean> createPlayList=null;
+
+    private PlayListAdapter mPlayListAdapter=null;
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,7 +74,8 @@ public class SelfPlayListFragment extends BaseFragment {
         manager.setOrientation(LinearLayout.HORIZONTAL);
         recentRecycleView.setLayoutManager(manager);
         recentRecycleView.setItemAnimator(new DefaultItemAnimator());
-        recentPlayList= DBManager.get().getRecentPlayDao().loadAll();
+        recentPlayList= DBManager.get().getRecentPlayDao().queryBuilder().offset(0).limit(10).list();
+        createPlayList=DBManager.get().getPlayListBeanDao().loadAll();
         if (recentPlayList!=null && recentPlayList.size()>0){
             tvRecentNothing.setVisibility(View.GONE);
             mAdapter=new RecentPlayAdapter(getActivity(),recentPlayList);
@@ -80,6 +87,34 @@ public class SelfPlayListFragment extends BaseFragment {
             @Override
             public boolean onClick(RecyclerView parent, View view, int position, long id) {
 
+                return true;
+            }
+
+            @Override
+            public boolean onLongClick(RecyclerView parent, View view, int position, long id) {
+                return true;
+            }
+
+            @Override
+            public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
+
+            }
+        });
+
+        LinearLayoutManager manager1 = new LinearLayoutManager(getContext());
+        manager1.setOrientation(LinearLayout.VERTICAL);
+        createRecycleView.setLayoutManager(manager1);
+        createRecycleView.setItemAnimator(new DefaultItemAnimator());
+        if (createPlayList!=null && createPlayList.size()>0){
+            tvCreateNothing.setVisibility(View.GONE);
+            mPlayListAdapter=new PlayListAdapter(getActivity(),createPlayList);
+            createRecycleView.setAdapter(mPlayListAdapter);
+        }else {
+            tvCreateNothing.setVisibility(View.VISIBLE);
+        }
+        createRecycleView.addOnItemTouchListener(new ClickItemTouchListener(createRecycleView) {
+            @Override
+            public boolean onClick(RecyclerView parent, View view, int position, long id) {
                 return true;
             }
 
