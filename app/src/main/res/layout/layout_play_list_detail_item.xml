@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:cardBackgroundColor="#ffffff"
+    app:cardCornerRadius="5dp"
+    app:cardElevation="5dp"
+    android:layout_marginTop="10dp"
+    android:layout_marginLeft="10dp"
+    android:layout_marginRight="10dp">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <com.commai.commaplayer.widget.SuperscriptView
+            android:id="@+id/tv_superscript"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|left"
+            android:background="@color/colorblue"
+            android:gravity="center_horizontal|bottom"
+            android:text="音乐"
+            android:textColor="@android:color/white"
+            android:textSize="14sp"/>
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:minHeight="65dp"
+            android:padding="6dp">
+            <TextView
+                android:id="@+id/media_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="被风吹过的夏天"
+                android:layout_marginTop="10dp"/>
+            <TextView
+                android:id="@+id/media_info"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="时长：00：02：30    大小：20M"/>
+
+        </LinearLayout>
+    </LinearLayout>
+</android.support.v7.widget.CardView>

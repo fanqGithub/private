@@ -6,6 +6,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,10 +28,10 @@ import java.util.Map;
  * Description:
  */
 
-public class LocalMusicFragment extends BaseFragment implements MusicItemAdapter.OnMyCheckChangeListener{
+public class LocalMusicFragment extends BaseFragment{
 
     private RecyclerView mediaListView=null;
-    private MusicItemAdapter adapter=null;
+    public MusicItemAdapter adapter=null;
     private onMusicClickCallBackListener musicClickListener=null;
 
     public boolean isMutiableCheckShow=false;
@@ -58,6 +59,8 @@ public class LocalMusicFragment extends BaseFragment implements MusicItemAdapter
                 }else if(musicClickListener!=null && isMutiableCheckShow){
                     Map<Integer, Boolean> map=adapter.getSelectedData();
                     map.put(position,map.get(position)?false:true);
+                    //选中的话，加入
+                    addSelected(position,map.get(position));
                     adapter.notifyDataSetChanged();
                 }
                 return true;
@@ -69,6 +72,7 @@ public class LocalMusicFragment extends BaseFragment implements MusicItemAdapter
                 adapter.notifyCheckMeShow();
                 Map<Integer, Boolean> map=adapter.getSelectedData();
                 map.put(position,map.get(position)?false:true);
+                addSelected(position,map.get(position));
                 adapter.notifyDataSetChanged();
                 if (musicClickListener!=null && isMutiableCheckShow){
                     musicClickListener.onItemLongPressCallBack(position);
@@ -88,14 +92,13 @@ public class LocalMusicFragment extends BaseFragment implements MusicItemAdapter
     private void initData(){
         if (MainActivity.audioItemList!=null){
             adapter=new MusicItemAdapter(getContext(),MainActivity.audioItemList);
-            adapter.setCheckChangeListener(this);
             mediaListView.setAdapter(adapter);
         }
 
     }
 
-    @Override
-    public void checkChanged(int position, boolean isChecked) {
+    public void addSelected(int position, boolean isChecked) {
+        Log.d("Tag_触发",position+"--"+isChecked);
         AudioItem item= MainActivity.audioItemList.get(position);
         //添加
         SelectedMediaItem selected=new SelectedMediaItem();

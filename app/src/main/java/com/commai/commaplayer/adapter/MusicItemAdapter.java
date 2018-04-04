@@ -30,7 +30,6 @@ public class MusicItemAdapter extends RecyclerView.Adapter<MusicItemAdapter.Musi
     private List<AudioItem> list=null;
     private ImageLoader imageLoader;
     private boolean isShowCheckMe=false;
-    private OnMyCheckChangeListener mListener;
 
     private Map<Integer, Boolean> map = new HashMap<>();
 
@@ -49,7 +48,7 @@ public class MusicItemAdapter extends RecyclerView.Adapter<MusicItemAdapter.Musi
     }
 
     @Override
-    public void onBindViewHolder(MusicItemHolder holder, int position) {
+    public void onBindViewHolder(final MusicItemHolder holder, final int position) {
         final int mPosition=position;
         AudioItem item=list.get(position);
         imageLoader.DisplayImage(item.getPath(),holder.music_img);
@@ -70,26 +69,17 @@ public class MusicItemAdapter extends RecyclerView.Adapter<MusicItemAdapter.Musi
             showS=second+"";
         }
         holder.checkMe.setTag(position);
+        holder.checkMe.setOnCheckedChangeListener(null);
         holder.info.setText("时长: " + showM + ":" + showS);
         holder.artist_alum.setText(item.getArtist()+"——"+item.getAlbum());
+
+        holder.checkMe.setChecked(map.get(position));
+
         if (isShowCheckMe){
             holder.checkMe.setVisibility(View.VISIBLE);
         }else {
             holder.checkMe.setVisibility(View.GONE);
         }
-        holder.checkMe.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                map.put(mPosition, isChecked);
-                if (mListener!=null){
-                    mListener.checkChanged(mPosition,isChecked);
-                }
-            }
-        });
-        if (map.get(position) == null) {
-            map.put(position, false);
-        }
-        holder.checkMe.setChecked(map.get(position));
         holder.itemView.setTag(position);
     }
 
@@ -136,13 +126,5 @@ public class MusicItemAdapter extends RecyclerView.Adapter<MusicItemAdapter.Musi
             artist_alum=itemView.findViewById(R.id.artist_alum);
             checkMe=itemView.findViewById(R.id.checkme);
         }
-    }
-
-    public interface OnMyCheckChangeListener{
-        void checkChanged(int position,boolean isChecked);
-    }
-
-    public void setCheckChangeListener(OnMyCheckChangeListener listener){
-        this.mListener=listener;
     }
 }

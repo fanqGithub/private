@@ -53,5 +53,5 @@ dependencies {
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
     compile 'org.greenrobot:greendao:3.2.2'
     compile 'com.google.code.gson:gson:2.8.0'
-
+    implementation 'com.android.support:design:26.1.0'
 }

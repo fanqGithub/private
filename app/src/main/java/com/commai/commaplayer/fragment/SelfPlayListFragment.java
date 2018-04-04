@@ -11,8 +11,10 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.commai.commaplayer.Entity.AllPlayLists;
 import com.commai.commaplayer.Entity.RecentPlay;
 import com.commai.commaplayer.R;
+import com.commai.commaplayer.activity.PlayListItemActivity;
 import com.commai.commaplayer.adapter.PlayListAdapter;
 import com.commai.commaplayer.adapter.RecentPlayAdapter;
 import com.commai.commaplayer.base.BaseFragment;
@@ -115,6 +117,9 @@ public class SelfPlayListFragment extends BaseFragment {
         createRecycleView.addOnItemTouchListener(new ClickItemTouchListener(createRecycleView) {
             @Override
             public boolean onClick(RecyclerView parent, View view, int position, long id) {
+                PlayListBean listBean=createPlayList.get(position);
+                String listJson=listBean.getPlayListJson();
+                PlayListItemActivity.action(getContext(),listJson,listBean.getPlayListName());
                 return true;
             }
 

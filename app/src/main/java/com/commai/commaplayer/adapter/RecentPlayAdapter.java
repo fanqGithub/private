@@ -13,6 +13,7 @@ import com.commai.commaplayer.Entity.AudioItem;
 import com.commai.commaplayer.Entity.RecentPlay;
 import com.commai.commaplayer.R;
 import com.commai.commaplayer.utils.imageLoader.ImageLoader;
+import com.commai.commaplayer.widget.SuperscriptView;
 
 import java.util.List;
 
@@ -46,9 +47,11 @@ public class RecentPlayAdapter extends RecyclerView.Adapter<RecentPlayAdapter.Re
         if ("audio".equals(recentItem.getMediaType())){
             imageLoader.DisplayImage(recentItem.getMediaPath(),holder.recent_img);
             holder.recent_title.setText(recentItem.getMediaName());
+//            holder.superscriptView.setText("音频");
         }else {
             Glide.with(mContext).load(recentItem.getThumbImgPath()).into(holder.recent_img);
             holder.recent_title.setText(recentItem.getMediaName());
+//            holder.superscriptView.setText("视频");
         }
         holder.itemView.setTag(position);
     }
@@ -65,10 +68,12 @@ public class RecentPlayAdapter extends RecyclerView.Adapter<RecentPlayAdapter.Re
     class RecentItemHolder  extends RecyclerView.ViewHolder{
         ImageView recent_img;
         TextView recent_title;
+        SuperscriptView superscriptView;
         public RecentItemHolder(View itemView) {
             super(itemView);
             recent_img=itemView.findViewById(R.id.media_img);
             recent_title = itemView.findViewById(R.id.media_title);
+            superscriptView=itemView.findViewById(R.id.tv_superscript);
         }
     }
 

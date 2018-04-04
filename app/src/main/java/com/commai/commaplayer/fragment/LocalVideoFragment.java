@@ -6,12 +6,15 @@ import android.support.annotation.Nullable;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
+import com.commai.commaplayer.Entity.AudioItem;
 import com.commai.commaplayer.Entity.RecentPlay;
+import com.commai.commaplayer.Entity.SelectedMediaItem;
 import com.commai.commaplayer.Entity.VideoItem;
 import com.commai.commaplayer.MainActivity;
 import com.commai.commaplayer.R;
@@ -25,6 +28,7 @@ import com.commai.commaplayer.threadpool.ThreadPoolProxyFactory;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Map;
 
 /**
  * Created by fanqi on 2018/3/16.
@@ -35,6 +39,9 @@ public class LocalVideoFragment extends BaseFragment {
 
     private RecyclerView mediaListView=null;
     private VideoItemAdapter adapter=null;
+    private OnVideoCallBackListener mListener;
+
+    public boolean isMutiableCheckShow=false;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -53,12 +60,12 @@ public class LocalVideoFragment extends BaseFragment {
         mediaListView.addOnItemTouchListener(new ClickItemTouchListener(mediaListView) {
             @Override
             public boolean onClick(RecyclerView parent, View view, int position, long id) {
-                if (position >= 0) {
-                    final VideoItem videoItem=MainActivity.videoItemList.get(position);
+                final VideoItem videoItem = MainActivity.videoItemList.get(position);
+                if (!isMutiableCheckShow) {
                     ThreadPoolProxyFactory.getNormalThreadPoolProxy().execute(new Runnable() {
                         @Override
                         public void run() {
-                            RecentPlay playItem=new RecentPlay();
+                            RecentPlay playItem = new RecentPlay();
                             playItem.setMediaName(videoItem.getName());
                             playItem.setMediaPath(videoItem.getPath());
                             playItem.setDuration(videoItem.getDuration());
@@ -66,25 +73,41 @@ public class LocalVideoFragment extends BaseFragment {
                             playItem.setMediaType("video");
                             playItem.setThumbImgPath(videoItem.getThumbImgPath());
                             playItem.setPlayTime(new SimpleDateFormat("yyyyMMddhhmmss").format(new Date()));
-                            RecentPlay existItem= DBManager.get().getRecentPlayDao().queryBuilder().where(RecentPlayDao.Properties.MediaName.eq(videoItem.getName())).unique();
-                            if (existItem==null) {
+                            RecentPlay existItem = DBManager.get().getRecentPlayDao().queryBuilder().where(RecentPlayDao.Properties.MediaName.eq(videoItem.getName())).unique();
+                            if (existItem == null) {
                                 DBManager.get().getRecentPlayDao().insert(playItem);
-                            }else {
+                            } else {
                                 playItem.setId(existItem.getId());
                                 DBManager.get().getRecentPlayDao().update(playItem);
                             }
                         }
                     });
-                    Intent intent=new Intent(getContext(), CmVideoViewActivity.class);
-                    intent.putExtra("mediaPath",videoItem.getPath());
-                    intent.putExtra("videoTitle",videoItem.getName());
+                    Intent intent = new Intent(getContext(), CmVideoViewActivity.class);
+                    intent.putExtra("mediaPath", videoItem.getPath());
+                    intent.putExtra("videoTitle", videoItem.getName());
                     startActivity(intent);
+                }else{
+                    //进入点击选择模式
+                    Map<Integer, Boolean> map=adapter.getSelectedData();
+                    map.put(position,map.get(position)?false:true);
+                    addSelected(position,map.get(position));
+                    adapter.notifyDataSetChanged();
                 }
                 return true;
             }
 
             @Override
             public boolean onLongClick(RecyclerView parent, View view, int position, long id) {
+                isMutiableCheckShow=true;
+                adapter.notifyCheckMeShow();
+
+                Map<Integer, Boolean> map=adapter.getSelectedData();
+                map.put(position,map.get(position)?false:true);
+                addSelected(position,map.get(position));
+                adapter.notifyDataSetChanged();
+                if (mListener!=null){
+                    mListener.onVideoLongPressCallBack(position);
+                }
                 return true;
             }
 
@@ -102,6 +125,44 @@ public class LocalVideoFragment extends BaseFragment {
             adapter=new VideoItemAdapter(getContext(),MainActivity.videoItemList);
             mediaListView.setAdapter(adapter);
         }
+    }
+
+    public interface OnVideoCallBackListener{
+        void onVideoClickCallBack(int position);
+        void onVideoLongPressCallBack(int position);
+    }
+
+    public void setVideoClickCallBackListener(OnVideoCallBackListener listener){
+        this.mListener=listener;
+    }
+
+    public void addSelected(int position, boolean isChecked) {
+        Log.d("Tag_videoselect",position+"--"+isChecked);
+        VideoItem item= MainActivity.videoItemList.get(position);
+        //添加
+        SelectedMediaItem selected=new SelectedMediaItem();
+        selected.setMediaName(item.getName());
+        selected.setMediaPath(item.getPath());
+        selected.setMediaType("video");
+        selected.setSize(item.getSize());
+        selected.setDuration(item.getDuration());
+        if (isChecked) {
+            //需要判断原selectlist里面是否已经有了这个选项。
+            if (!MainActivity.selectedList.contains(selected)) {
+                MainActivity.selectedList.add(selected);
+            }
+        }else {
+            MainActivity.selectedList.remove(selected);
+        }
+    }
+
+    public void onKeyBackPress() {
+        isMutiableCheckShow=false;
+        Map<Integer, Boolean> map=adapter.getSelectedData();
+        for (int i=0;i<map.size();i++){
+            map.put(i,false);
+        }
+        adapter.notifyCheckMeHidel();
     }
 
 }

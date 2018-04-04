@@ -25,12 +25,17 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
 
+import com.commai.commaplayer.Entity.AllPlayLists;
+import com.commai.commaplayer.Entity.SelectedMediaItem;
 import com.commai.commaplayer.R;
 import com.commai.commaplayer.base.BaseActivity;
 import com.commai.commaplayer.service.MusicPlayer;
 import com.commai.commaplayer.service.OnPlayerEventListener;
 import com.commai.commaplayer.utils.MediaUtil;
 import com.commai.commaplayer.widget.CmVideoView;
+import com.google.gson.Gson;
+
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -43,7 +48,7 @@ import butterknife.ButterKnife;
 public class CmVideoViewActivity extends BaseActivity implements View.OnClickListener,View.OnTouchListener{
 
     @BindView(R.id.cm_video_player)
-    CmVideoView videoView;
+    VideoView videoView;
 
     @BindView(R.id.seek_video)
     SeekBar videoSeek;
@@ -94,6 +99,13 @@ public class CmVideoViewActivity extends BaseActivity implements View.OnClickLis
 
     private String videoTitle="";
 
+    //用于播放列表文件
+    private boolean isPlayList=false;
+    private Gson gson;
+    private AllPlayLists playLists;
+    private String listJson=null;
+    private int currentIndex=0;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -110,6 +122,7 @@ public class CmVideoViewActivity extends BaseActivity implements View.OnClickLis
     }
 
     private void initViewData(){
+        gson=new Gson();
         showCotrollHandler=new Handler();
         showCotrollHandler.postDelayed(mShowControllRunnable,5000);
 
@@ -140,9 +153,19 @@ public class CmVideoViewActivity extends BaseActivity implements View.OnClickLis
         playLayout.setOnTouchListener(this);
 
         if (getIntent().getExtras()!=null){
-            mediaPath=getIntent().getStringExtra("mediaPath");
-            videoTitle=getIntent().getStringExtra("videoTitle");
+            isPlayList=getIntent().getBooleanExtra("isPlayList",false);
+            if (isPlayList){
+                listJson=getIntent().getExtras().getString("listPlayJson");
+                playLists=gson.fromJson(listJson,AllPlayLists.class);
+                //先播放列表中的第一个媒体文件
+                mediaPath=playLists.getSelectedList().get(0).getMediaPath();
+                videoTitle=playLists.getSelectedList().get(0).getMediaName();
+            }else {
+                mediaPath = getIntent().getStringExtra("mediaPath");
+                videoTitle = getIntent().getStringExtra("videoTitle");
+            }
         }
+
         if (!TextUtils.isEmpty(mediaPath)) {
             videoView.setVideoPath(mediaPath);
         }
@@ -153,13 +176,7 @@ public class CmVideoViewActivity extends BaseActivity implements View.OnClickLis
             @Override
             public void onPrepared(MediaPlayer mp) {
                 mp.setVideoScalingMode(MediaPlayer.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING);
-                videoView.start();
-                ivPlayPause.setSelected(true);
-                handler.post(mUpdateRunnable);
-                //设置视频信息
-                videoSeek.setMax(mp.getDuration());
-                totalVideoTime=getUpdateTimeInfo(mp.getDuration());
-                tvCurrentTimeAndTotalTime.setText("00:00:00/"+totalVideoTime);
+                preparedAndStartPlay(mp.getDuration());
             }
         });
 
@@ -173,7 +190,20 @@ public class CmVideoViewActivity extends BaseActivity implements View.OnClickLis
         videoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
-                Toast.makeText(CmVideoViewActivity.this,"播放完了",Toast.LENGTH_SHORT).show();
+                if (isPlayList) {
+                    if (currentIndex<playLists.getSelectedList().size()-1){
+                        Toast.makeText(CmVideoViewActivity.this, "为您播放下一个媒体文件", Toast.LENGTH_SHORT).show();
+                        currentIndex=++currentIndex;
+                        String path=playLists.getSelectedList().get(currentIndex).getMediaPath();
+                        videoView.setVideoPath(path);
+                        tvVideoTitle.setText(playLists.getSelectedList().get(currentIndex).getMediaName());
+                        preparedAndStartPlay(playLists.getSelectedList().get(currentIndex).getDuration());
+                    }else {
+                        Toast.makeText(CmVideoViewActivity.this, "列表已播放完毕", Toast.LENGTH_SHORT).show();
+                    }
+                }else {
+                    Toast.makeText(CmVideoViewActivity.this, "播放完毕", Toast.LENGTH_SHORT).show();
+                }
                 ivPlayPause.setSelected(false);
                 handler.removeCallbacks(mUpdateRunnable);
             }
@@ -203,6 +233,16 @@ public class CmVideoViewActivity extends BaseActivity implements View.OnClickLis
             }
         });
 
+    }
+
+    private void preparedAndStartPlay(int duration) {
+        videoView.start();
+        ivPlayPause.setSelected(true);
+        handler.post(mUpdateRunnable);
+        //设置视频信息
+        videoSeek.setMax(duration);
+        totalVideoTime=getUpdateTimeInfo(duration);
+        tvCurrentTimeAndTotalTime.setText("00:00:00/"+totalVideoTime);
     }
 
     @Override

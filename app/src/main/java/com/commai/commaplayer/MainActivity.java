@@ -41,6 +41,7 @@ import com.commai.commaplayer.fragment.SelfPlayListFragment;
 import com.commai.commaplayer.greendao.bean.PlayListBean;
 import com.commai.commaplayer.greendao.dao.DBManager;
 import com.commai.commaplayer.greendao.dao.PlayListBeanDao;
+import com.commai.commaplayer.listener.ClickItemTouchListener;
 import com.commai.commaplayer.service.MusicPlayService;
 import com.commai.commaplayer.service.MusicPlayer;
 import com.commai.commaplayer.service.OnPlayerEventListener;
@@ -56,6 +57,7 @@ import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -264,7 +266,11 @@ public class MainActivity extends AppCompatActivity implements
                 showAddToPlayListDialog();
                 break;
             case R.id.cancel_choose:
-                resetView();
+                if (videoFragment.isMutiableCheckShow){
+                    resetVideoView();
+                }else if (musicFragment.isMutiableCheckShow){
+                    resetView();
+                }
                 break;
             default:
                 break;
@@ -306,15 +312,32 @@ public class MainActivity extends AppCompatActivity implements
 
             @Override
             public void onItemLongPressCallBack(int position) {
-                //item长按，toggleview隐藏，choose_top_view显示，choose_bottom_view显示
-                mVp.setVpScrollAble(false);
-                toggleView.setVisibility(View.GONE);
-                bottomSmallPalyer.setVisibility(View.GONE);
-                chooseTopView.setVisibility(View.VISIBLE);
-                chooseBottomView.setVisibility(View.VISIBLE);
+
+                showAddPlayTopAndBottomView();
 
             }
         });
+
+        videoFragment.setVideoClickCallBackListener(new LocalVideoFragment.OnVideoCallBackListener() {
+            @Override
+            public void onVideoClickCallBack(int position) {
+
+            }
+
+            @Override
+            public void onVideoLongPressCallBack(int position) {
+                showAddPlayTopAndBottomView();
+            }
+        });
+    }
+
+    private void showAddPlayTopAndBottomView() {
+        //item长按，toggleview隐藏，choose_top_view显示，choose_bottom_view显示
+        mVp.setVpScrollAble(false);
+        toggleView.setVisibility(View.GONE);
+        bottomSmallPalyer.setVisibility(View.GONE);
+        chooseTopView.setVisibility(View.VISIBLE);
+        chooseBottomView.setVisibility(View.VISIBLE);
     }
 
     private void initMediaData(){
@@ -387,45 +410,80 @@ public class MainActivity extends AppCompatActivity implements
         Log.d("Tag_selected_obj", gson.toJson(allPlayLists));
 
         RecyclerView playListView=dialog.findViewById(R.id.play_list);
-        LinearLayoutManager manager = new LinearLayoutManager(this);
-        manager.setOrientation(LinearLayout.VERTICAL);
-        playListView.setLayoutManager(manager);
-        List<PlayListBean> listBeans=DBManager.get().getPlayListBeanDao().loadAll();
-        AddPlayListAdapter addPlayListAdapter=new AddPlayListAdapter(this,listBeans);
-        playListView.setAdapter(addPlayListAdapter);
 
         final EditText editTextNewList=dialog.findViewById(R.id.new_playlist_name);
         ImageView confrimButtom=dialog.findViewById(R.id.confirm_button);
+        LinearLayoutManager manager = new LinearLayoutManager(this);
+        manager.setOrientation(LinearLayout.VERTICAL);
+        playListView.setLayoutManager(manager);
+        final List<PlayListBean> listBeans=DBManager.get().getPlayListBeanDao().loadAll();
+        AddPlayListAdapter addPlayListAdapter=new AddPlayListAdapter(this,listBeans);
+        playListView.setAdapter(addPlayListAdapter);
+        playListView.addOnItemTouchListener(new ClickItemTouchListener(playListView) {
+            @Override
+            public boolean onClick(RecyclerView parent, View view, int position, long id) {
+                PlayListBean listBean=listBeans.get(position);
+                AllPlayLists playLists=gson.fromJson(listBean.getPlayListJson(), AllPlayLists.class);
+                List<SelectedMediaItem> selectedMediaItems=playLists.getSelectedList();
+                selectedMediaItems.addAll(selectedList);
+                AllPlayLists newAllLists=new AllPlayLists();
+                newAllLists.setSelectedList(selectedMediaItems);
+                Log.d("Tag_item_click_new",newAllLists.getSelectedList().size()+"");
+                Log.d("Tag_item_click_new_gson", gson.toJson(newAllLists));
+                commitSelected(listBean.getPlayListName(),newAllLists);
+                dialog.dismiss();
+                return true;
+            }
+
+            @Override
+            public boolean onLongClick(RecyclerView parent, View view, int position, long id) {
+                return false;
+            }
+
+            @Override
+            public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
+
+            }
+        });
+
 
         confrimButtom.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (TextUtils.isEmpty(editTextNewList.getText())){
+                if (TextUtils.isEmpty(editTextNewList.getText().toString())){
                     Toast.makeText(MainActivity.this,"请填写列表名",Toast.LENGTH_SHORT).show();
                     return;
                 }
-                PlayListBean bean=new PlayListBean();
-                bean.setPlayListName(editTextNewList.getText().toString());
-                bean.setPlayListJson(gson.toJson(allPlayLists));
-                PlayListBean existBean=DBManager.get().getPlayListBeanDao().queryBuilder().where(PlayListBeanDao.Properties.PlayListName.eq(editTextNewList.getText().toString())).unique();
-                if (existBean==null) {
-                    DBManager.get().getPlayListBeanDao().insert(bean);
-                }else {
-                    bean.setId(existBean.getId());
-                    DBManager.get().getPlayListBeanDao().update(bean);
-                }
-                Toast.makeText(MainActivity.this,"已添加至"+editTextNewList.getText().toString()+"列表中",Toast.LENGTH_SHORT).show();
+                commitSelected(editTextNewList.getText().toString(),allPlayLists);
                 dialog.dismiss();
-                resetView();
             }
         });
-
         dialog.show();
 
     }
 
+    private void commitSelected(String playListName,AllPlayLists playLists){
+        PlayListBean bean=new PlayListBean();
+        bean.setPlayListName(playListName);
+        bean.setPlayListJson(gson.toJson(playLists));
+        PlayListBean existBean=DBManager.get().getPlayListBeanDao().queryBuilder().where(PlayListBeanDao.Properties.PlayListName.eq(playListName)).unique();
+        if (existBean==null) {
+            DBManager.get().getPlayListBeanDao().insert(bean);
+        }else {
+            bean.setId(existBean.getId());
+            DBManager.get().getPlayListBeanDao().update(bean);
+        }
+        Toast.makeText(MainActivity.this,"已添加至"+playListName+"列表中",Toast.LENGTH_SHORT).show();
+        if (videoFragment.isMutiableCheckShow){
+            resetVideoView();
+        }else if (musicFragment.isMutiableCheckShow){
+            resetView();
+        }
+    }
+
     @Override
     public void onBackPressed() {
+        //以下三个条件，不会同时满足
         if (mPlayFragment != null && isPlayFragmentShow) {
             hidePlayingFragment();
             return;
@@ -434,6 +492,11 @@ public class MainActivity extends AppCompatActivity implements
             resetView();
             return;
         }
+        if (videoFragment!=null&&videoFragment.isMutiableCheckShow){
+            resetVideoView();
+            return;
+        }
+
         super.onBackPressed();
     }
 
@@ -442,6 +505,10 @@ public class MainActivity extends AppCompatActivity implements
      */
     private void resetView(){
         musicFragment.onKeyBackPress();
+        clearSelectedItem();
+    }
+
+    private void clearSelectedItem() {
         selectedList.clear();
         if (allPlayLists.getSelectedList()!=null) {
             allPlayLists.getSelectedList().clear();
@@ -451,6 +518,11 @@ public class MainActivity extends AppCompatActivity implements
         bottomSmallPalyer.setVisibility(View.VISIBLE);
         chooseTopView.setVisibility(View.GONE);
         chooseBottomView.setVisibility(View.GONE);
+    }
+
+    private void resetVideoView(){
+        videoFragment.onKeyBackPress();
+        clearSelectedItem();
     }
 
 

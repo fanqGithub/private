@@ -45,8 +45,6 @@ public class CmVideoView extends VideoView{
         super.setVideoPath(path);
         MediaMetadataRetriever retr = new MediaMetadataRetriever();
         retr.setDataSource(path);
-        Bitmap bitmap=retr.getFrameAtTime();
-        Log.d("设获取的bitmap" + "宽高:", bitmap.getWidth()+":"+bitmap.getHeight());
         String height = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT); // 视频高度
         String width = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH); // 视频宽度
         orientation=retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION);//原视频的方向 90竖屏，0横屏
