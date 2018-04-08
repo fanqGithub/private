@@ -1,7 +1,9 @@
 package com.commai.commaplayer.activity;
 
 import android.annotation.TargetApi;
+import android.app.Dialog;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.media.Image;
 import android.media.MediaPlayer;
 import android.os.Build;
@@ -19,6 +21,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -29,8 +32,10 @@ import com.commai.commaplayer.Entity.AllPlayLists;
 import com.commai.commaplayer.Entity.SelectedMediaItem;
 import com.commai.commaplayer.R;
 import com.commai.commaplayer.base.BaseActivity;
+import com.commai.commaplayer.enums.PlayModeEnum;
 import com.commai.commaplayer.service.MusicPlayer;
 import com.commai.commaplayer.service.OnPlayerEventListener;
+import com.commai.commaplayer.shareprefrence.Preferences;
 import com.commai.commaplayer.utils.MediaUtil;
 import com.commai.commaplayer.widget.CmVideoView;
 import com.google.gson.Gson;
@@ -42,7 +47,7 @@ import butterknife.ButterKnife;
 
 /**
  * @author:范启 Created on 2018/3/25.
- * Description:
+ * Description:在播放创建的播放列表时，不管音频，视频，都是在此播放器进行播放。
  */
 
 public class CmVideoViewActivity extends BaseActivity implements View.OnClickListener,View.OnTouchListener{
@@ -106,6 +111,10 @@ public class CmVideoViewActivity extends BaseActivity implements View.OnClickLis
     private String listJson=null;
     private int currentIndex=0;
 
+    private PlayModeEnum playModeEnum;
+
+    private int mDuration=0;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -151,6 +160,7 @@ public class CmVideoViewActivity extends BaseActivity implements View.OnClickLis
         ivBack.setOnClickListener(this);
         videoView.setOnTouchListener(this);
         playLayout.setOnTouchListener(this);
+        ivMorevert.setOnClickListener(this);
 
         if (getIntent().getExtras()!=null){
             isPlayList=getIntent().getBooleanExtra("isPlayList",false);
@@ -163,6 +173,7 @@ public class CmVideoViewActivity extends BaseActivity implements View.OnClickLis
             }else {
                 mediaPath = getIntent().getStringExtra("mediaPath");
                 videoTitle = getIntent().getStringExtra("videoTitle");
+                mDuration=getIntent().getIntExtra("duration",0);
             }
         }
 
@@ -170,7 +181,6 @@ public class CmVideoViewActivity extends BaseActivity implements View.OnClickLis
             videoView.setVideoPath(mediaPath);
         }
         tvVideoTitle.setText(videoTitle);
-
         videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
             @Override
@@ -190,22 +200,63 @@ public class CmVideoViewActivity extends BaseActivity implements View.OnClickLis
         videoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
-                if (isPlayList) {
-                    if (currentIndex<playLists.getSelectedList().size()-1){
-                        Toast.makeText(CmVideoViewActivity.this, "为您播放下一个媒体文件", Toast.LENGTH_SHORT).show();
-                        currentIndex=++currentIndex;
-                        String path=playLists.getSelectedList().get(currentIndex).getMediaPath();
-                        videoView.setVideoPath(path);
-                        tvVideoTitle.setText(playLists.getSelectedList().get(currentIndex).getMediaName());
-                        preparedAndStartPlay(playLists.getSelectedList().get(currentIndex).getDuration());
-                    }else {
-                        Toast.makeText(CmVideoViewActivity.this, "列表已播放完毕", Toast.LENGTH_SHORT).show();
-                    }
-                }else {
-                    Toast.makeText(CmVideoViewActivity.this, "播放完毕", Toast.LENGTH_SHORT).show();
-                }
                 ivPlayPause.setSelected(false);
                 handler.removeCallbacks(mUpdateRunnable);
+                PlayModeEnum mode=PlayModeEnum.valueOf(Preferences.getPlayMode());
+                switch (mode){
+                    //列表循环
+                    case LOOP:
+                        if (isPlayList) {
+                            if (currentIndex<playLists.getSelectedList().size()-1){
+                                Toast.makeText(CmVideoViewActivity.this, "为您播放下一个媒体文件", Toast.LENGTH_SHORT).show();
+                                currentIndex=++currentIndex;
+                                String path=playLists.getSelectedList().get(currentIndex).getMediaPath();
+                                videoView.setVideoPath(path);
+                                tvVideoTitle.setText(playLists.getSelectedList().get(currentIndex).getMediaName());
+                                preparedAndStartPlay(playLists.getSelectedList().get(currentIndex).getDuration());
+                            }else if (currentIndex==playLists.getSelectedList().size()-1){
+                                //重新开始从列表的0开始再次循环
+                                currentIndex=0;
+                                String path=playLists.getSelectedList().get(currentIndex).getMediaPath();
+                                videoView.setVideoPath(path);
+                                tvVideoTitle.setText(playLists.getSelectedList().get(currentIndex).getMediaName());
+                                preparedAndStartPlay(playLists.getSelectedList().get(currentIndex).getDuration());
+                            }
+                        }else {
+                            videoView.setVideoPath(mediaPath);
+                            preparedAndStartPlay(mDuration);
+                        }
+                        break;
+                    case SINGLE:
+                        if (isPlayList) {
+                            String path=playLists.getSelectedList().get(currentIndex).getMediaPath();
+                            videoView.setVideoPath(path);
+                            tvVideoTitle.setText(playLists.getSelectedList().get(currentIndex).getMediaName());
+                            preparedAndStartPlay(playLists.getSelectedList().get(currentIndex).getDuration());
+                        }else {
+                            videoView.setVideoPath(mediaPath);
+                            preparedAndStartPlay(mDuration);
+                        }
+                        break;
+                    case LISTONCE:
+                        if (isPlayList) {
+                            if (currentIndex < playLists.getSelectedList().size() - 1) {
+                                Toast.makeText(CmVideoViewActivity.this, "为您播放下一个媒体文件", Toast.LENGTH_SHORT).show();
+                                currentIndex = ++currentIndex;
+                                String path = playLists.getSelectedList().get(currentIndex).getMediaPath();
+                                videoView.setVideoPath(path);
+                                tvVideoTitle.setText(playLists.getSelectedList().get(currentIndex).getMediaName());
+                                preparedAndStartPlay(playLists.getSelectedList().get(currentIndex).getDuration());
+                            } else {
+                                Toast.makeText(CmVideoViewActivity.this, "列表播放完毕!", Toast.LENGTH_SHORT).show();
+                            }
+                        }else {
+                            Toast.makeText(CmVideoViewActivity.this, "播放完毕!", Toast.LENGTH_SHORT).show();
+                        }
+                        break;
+                    default:
+                        break;
+                }
             }
         });
 
@@ -268,10 +319,101 @@ public class CmVideoViewActivity extends BaseActivity implements View.OnClickLis
             case R.id.iv_back:
                 this.finish();
                 break;
+            case R.id.more_vert:
+                showPlayModeDialog();
+                break;
             default:
                 break;
         }
     }
+
+    private void showPlayModeDialog(){
+        final Dialog dialog = new Dialog(this);
+        dialog.setContentView(R.layout.layout_dialog_play_mode);
+        dialog.setTitle("PLAY MODE");
+        LinearLayout repeat=dialog.findViewById(R.id.repeat_view);
+        LinearLayout repeatOne=dialog.findViewById(R.id.repeat_one_view);
+        LinearLayout playListOnce=dialog.findViewById(R.id.play_once_view);
+        final ImageView ivRepeatList=dialog.findViewById(R.id.iv_repeat_list);
+        final ImageView ivRepeatOne=dialog.findViewById(R.id.iv_repeat_one);
+        final ImageView ivPlayOnce=dialog.findViewById(R.id.iv_play_once);
+        final TextView tvRepeatList=dialog.findViewById(R.id.tv_repeat_list);
+        final TextView tvRepeatOne=dialog.findViewById(R.id.tv_repeat_one);
+        final TextView tvPlayOnce=dialog.findViewById(R.id.tv_play_once);
+
+        PlayModeEnum mode=PlayModeEnum.valueOf(Preferences.getPlayMode());
+        switch (mode) {
+            //列表循环
+            case LOOP:
+                //显示选中播放模式
+                repeatSelect(ivRepeatList, ivRepeatOne,ivPlayOnce,tvRepeatList, tvRepeatOne,tvPlayOnce,
+                        true, false,false, Color.parseColor("#6495ED"),
+                        Color.parseColor("#ffffff"), Color.parseColor("#ffffff"));
+                break;
+            case SHUFFLE:
+                break;
+            //单文件循环
+            case SINGLE:
+                repeatSelect(ivRepeatList, ivRepeatOne,ivPlayOnce, tvRepeatList, tvRepeatOne,tvPlayOnce,
+                        false, true,false,Color.parseColor("#ffffff"),
+                        Color.parseColor("#6495ED"),Color.parseColor("#ffffff"));
+                break;
+            case LISTONCE:
+                repeatSelect(ivRepeatList, ivRepeatOne,ivPlayOnce, tvRepeatList, tvRepeatOne,tvPlayOnce,
+                        false, false,true,Color.parseColor("#ffffff"),
+                        Color.parseColor("#ffffff"),Color.parseColor("#6495ED"));
+                break;
+            default:
+                break;
+        }
+
+        repeat.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                playModeEnum=PlayModeEnum.valueOf(0);
+                repeatSelect(ivRepeatList, ivRepeatOne,ivPlayOnce,tvRepeatList, tvRepeatOne,tvPlayOnce,
+                        true, false,false, Color.parseColor("#6495ED"),
+                        Color.parseColor("#ffffff"), Color.parseColor("#ffffff"));
+                Preferences.savePlayMode(playModeEnum.value());
+            }
+        });
+        repeatOne.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                playModeEnum=PlayModeEnum.valueOf(2);
+                repeatSelect(ivRepeatList, ivRepeatOne,ivPlayOnce, tvRepeatList, tvRepeatOne,tvPlayOnce,
+                        false, true,false,Color.parseColor("#ffffff"),
+                        Color.parseColor("#6495ED"),Color.parseColor("#ffffff"));
+                Preferences.savePlayMode(playModeEnum.value());
+            }
+        });
+
+        playListOnce.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                playModeEnum=PlayModeEnum.valueOf(3);
+                repeatSelect(ivRepeatList, ivRepeatOne,ivPlayOnce, tvRepeatList, tvRepeatOne,tvPlayOnce,
+                        false, false,true,Color.parseColor("#ffffff"),
+                        Color.parseColor("#ffffff"),Color.parseColor("#6495ED"));
+                Preferences.savePlayMode(playModeEnum.value());
+            }
+        });
+
+        dialog.show();
+
+    }
+
+    private void repeatSelect(ImageView ivRepeatList, ImageView ivRepeatOne,ImageView ivPlayOnce,TextView tvRepeatList,
+                              TextView tvRepeatOne,TextView tvPlayOnce, boolean selected, boolean selected2,boolean selected3,
+                              int color, int color2,int color3) {
+        ivRepeatList.setSelected(selected);
+        ivRepeatOne.setSelected(selected2);
+        ivPlayOnce.setSelected(selected3);
+        tvRepeatList.setTextColor(color);
+        tvRepeatOne.setTextColor(color2);
+        tvPlayOnce.setTextColor(color3);
+    }
+
 
     private void startPlayVideo(){
         videoView.start();

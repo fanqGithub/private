@@ -50,7 +50,7 @@ public class LocalVideoFragment extends BaseFragment {
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(final LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view=inflater.inflate(R.layout.fragment_list,container,false);
         mediaListView=view.findViewById(R.id.mediaList);
         GridLayoutManager manager = new GridLayoutManager(getContext(), 2);
@@ -85,6 +85,7 @@ public class LocalVideoFragment extends BaseFragment {
                     Intent intent = new Intent(getContext(), CmVideoViewActivity.class);
                     intent.putExtra("mediaPath", videoItem.getPath());
                     intent.putExtra("videoTitle", videoItem.getName());
+                    intent.putExtra("duration",videoItem.getDuration());
                     startActivity(intent);
                 }else{
                     //进入点击选择模式

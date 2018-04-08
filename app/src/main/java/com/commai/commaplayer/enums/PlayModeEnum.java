@@ -6,7 +6,8 @@ package com.commai.commaplayer.enums;
 public enum PlayModeEnum {
     LOOP(0),
     SHUFFLE(1),
-    SINGLE(2);
+    SINGLE(2),
+    LISTONCE(3);
 
     private int value;
 
@@ -20,6 +21,8 @@ public enum PlayModeEnum {
                 return SHUFFLE;
             case 2:
                 return SINGLE;
+            case 3:
+                return LISTONCE;
             case 0:
             default:
                 return LOOP;

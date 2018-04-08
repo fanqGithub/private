@@ -1,5 +1,9 @@
 package com.commai.commaplayer.fragment;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -14,12 +18,14 @@ import android.widget.TextView;
 import com.commai.commaplayer.Entity.AllPlayLists;
 import com.commai.commaplayer.Entity.RecentPlay;
 import com.commai.commaplayer.R;
+import com.commai.commaplayer.activity.CmVideoViewActivity;
 import com.commai.commaplayer.activity.PlayListItemActivity;
 import com.commai.commaplayer.adapter.PlayListAdapter;
 import com.commai.commaplayer.adapter.RecentPlayAdapter;
 import com.commai.commaplayer.base.BaseFragment;
 import com.commai.commaplayer.greendao.bean.PlayListBean;
 import com.commai.commaplayer.greendao.dao.DBManager;
+import com.commai.commaplayer.greendao.dao.PlayListBeanDao;
 import com.commai.commaplayer.listener.ClickItemTouchListener;
 
 import java.util.List;
@@ -88,12 +94,26 @@ public class SelfPlayListFragment extends BaseFragment {
         recentRecycleView.addOnItemTouchListener(new ClickItemTouchListener(recentRecycleView) {
             @Override
             public boolean onClick(RecyclerView parent, View view, int position, long id) {
-
+                RecentPlay item=recentPlayList.get(position);
+                Intent intent = new Intent(getContext(), CmVideoViewActivity.class);
+                intent.putExtra("mediaPath", item.getMediaPath());
+                intent.putExtra("videoTitle", item.getMediaName());
+                intent.putExtra("duration",item.getDuration());
+                startActivity(intent);
                 return true;
             }
 
             @Override
             public boolean onLongClick(RecyclerView parent, View view, int position, long id) {
+                final RecentPlay item=recentPlayList.get(position);
+                new AlertDialog.Builder(getContext()).setMessage("删除此条播放记录！").setPositiveButton("删除", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        DBManager.get().getRecentPlayDao().delete(item);
+                        recentPlayList.remove(item);
+                        mAdapter.notifyDataSetChanged();
+                    }
+                }).setNegativeButton("取消", null).create().show();
                 return true;
             }
 
@@ -125,6 +145,8 @@ public class SelfPlayListFragment extends BaseFragment {
 
             @Override
             public boolean onLongClick(RecyclerView parent, View view, int position, long id) {
+                PlayListBean listBean=createPlayList.get(position);
+                showDeleteDialog(listBean);
                 return true;
             }
 
@@ -135,6 +157,16 @@ public class SelfPlayListFragment extends BaseFragment {
         });
     }
 
+    private void showDeleteDialog(final PlayListBean bean){
+        new AlertDialog.Builder(getContext()).setMessage("删除此播放列表！").setPositiveButton("删除", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                DBManager.get().getPlayListBeanDao().delete(bean);
+                createPlayList.remove(bean);
+                mPlayListAdapter.notifyDataSetChanged();
+            }
+        }).setNegativeButton("取消", null).create().show();
+    }
 
     @Override
     public void onDestroyView() {
