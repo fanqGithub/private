@@ -18,6 +18,7 @@ public class Preferences {
     private static final String PLAY_MODE = "play_mode";
     private static final String SPLASH_URL = "splash_url";
     private static final String NIGHT_MODE = "night_mode";
+    private static final String VIDEO_PLAY_MODE = "video_play_mode";
 
     private static final String RECENT_PLAY_LIST="recent_play_list";
 
@@ -42,6 +43,15 @@ public class Preferences {
     public static void savePlayMode(int mode) {
         saveInt(PLAY_MODE, mode);
     }
+
+    public static void saveVideoPlayMode(int mode) {
+        saveInt(VIDEO_PLAY_MODE, mode);
+    }
+
+    public static int getVideoPlayMode() {
+        return getInt(VIDEO_PLAY_MODE, 0);
+    }
+
 
     public static String getSplashUrl() {
         return getString(SPLASH_URL, "");

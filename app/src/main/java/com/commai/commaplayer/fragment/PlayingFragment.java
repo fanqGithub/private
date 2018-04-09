@@ -16,6 +16,9 @@ import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.view.animation.LinearInterpolator;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
@@ -131,11 +134,18 @@ public class PlayingFragment extends BaseFragment implements SeekBar.OnSeekBarCh
     @Override
     public void onPlayerStart() {
         ivPlay.setSelected(true);
+        Animation anim= AnimationUtils.loadAnimation(getContext(),R.anim.music_playing_img_round_anim);
+        LinearInterpolator interpolator = new LinearInterpolator();
+        anim.setInterpolator(interpolator);
+        if (anim!=null){
+            playing_music_img.startAnimation(anim);
+        }
     }
 
     @Override
     public void onPlayerPause() {
         ivPlay.setSelected(false);
+        playing_music_img.clearAnimation();
     }
 
     /**
@@ -247,13 +257,15 @@ public class PlayingFragment extends BaseFragment implements SeekBar.OnSeekBarCh
         switch (mode) {
             case LOOP:
                 mode = PlayModeEnum.SHUFFLE;
-
+                showToast("随机播放");
                 break;
             case SHUFFLE:
                 mode = PlayModeEnum.SINGLE;
+                showToast("单曲循环");
                 break;
             case SINGLE:
                 mode = PlayModeEnum.LOOP;
+                showToast("列表循环");
                 break;
             default:
                 break;

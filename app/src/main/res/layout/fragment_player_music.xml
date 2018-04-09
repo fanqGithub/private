@@ -99,15 +99,14 @@
         android:paddingRight="10dp">
         <ImageView
             android:id="@+id/repeat_controller"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="55dp"
+            android:layout_height="55dp"
             android:layout_alignParentLeft="true"
             android:layout_centerVertical="true"
             android:layout_marginLeft="10dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:clickable="true"
-            android:padding="3dp"
-            android:src="@drawable/ic_repeat_filled" />
+            android:src="@drawable/play_mode_level_list" />
 
         <ImageView
             android:id="@+id/previous"
@@ -150,7 +149,8 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:clickable="true"
             android:padding="3dp"
-            android:src="@drawable/ic_shuffle_filled" />
+            android:src="@drawable/ic_shuffle_filled"
+            android:visibility="gone"/>
 
     </RelativeLayout>
 

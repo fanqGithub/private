@@ -33,6 +33,7 @@ import com.commai.commaplayer.Entity.SelectedMediaItem;
 import com.commai.commaplayer.R;
 import com.commai.commaplayer.base.BaseActivity;
 import com.commai.commaplayer.enums.PlayModeEnum;
+import com.commai.commaplayer.enums.VideoPlayModeEnum;
 import com.commai.commaplayer.service.MusicPlayer;
 import com.commai.commaplayer.service.OnPlayerEventListener;
 import com.commai.commaplayer.shareprefrence.Preferences;
@@ -111,7 +112,7 @@ public class CmVideoViewActivity extends BaseActivity implements View.OnClickLis
     private String listJson=null;
     private int currentIndex=0;
 
-    private PlayModeEnum playModeEnum;
+    private VideoPlayModeEnum playModeEnum;
 
     private int mDuration=0;
 
@@ -202,7 +203,7 @@ public class CmVideoViewActivity extends BaseActivity implements View.OnClickLis
             public void onCompletion(MediaPlayer mp) {
                 ivPlayPause.setSelected(false);
                 handler.removeCallbacks(mUpdateRunnable);
-                PlayModeEnum mode=PlayModeEnum.valueOf(Preferences.getPlayMode());
+                VideoPlayModeEnum mode=VideoPlayModeEnum.valueOf(Preferences.getVideoPlayMode());
                 switch (mode){
                     //列表循环
                     case LOOP:
@@ -341,7 +342,7 @@ public class CmVideoViewActivity extends BaseActivity implements View.OnClickLis
         final TextView tvRepeatOne=dialog.findViewById(R.id.tv_repeat_one);
         final TextView tvPlayOnce=dialog.findViewById(R.id.tv_play_once);
 
-        PlayModeEnum mode=PlayModeEnum.valueOf(Preferences.getPlayMode());
+        VideoPlayModeEnum mode=VideoPlayModeEnum.valueOf(Preferences.getVideoPlayMode());
         switch (mode) {
             //列表循环
             case LOOP:
@@ -349,8 +350,6 @@ public class CmVideoViewActivity extends BaseActivity implements View.OnClickLis
                 repeatSelect(ivRepeatList, ivRepeatOne,ivPlayOnce,tvRepeatList, tvRepeatOne,tvPlayOnce,
                         true, false,false, Color.parseColor("#6495ED"),
                         Color.parseColor("#ffffff"), Color.parseColor("#ffffff"));
-                break;
-            case SHUFFLE:
                 break;
             //单文件循环
             case SINGLE:
@@ -370,32 +369,32 @@ public class CmVideoViewActivity extends BaseActivity implements View.OnClickLis
         repeat.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                playModeEnum=PlayModeEnum.valueOf(0);
+                playModeEnum=VideoPlayModeEnum.valueOf(0);
                 repeatSelect(ivRepeatList, ivRepeatOne,ivPlayOnce,tvRepeatList, tvRepeatOne,tvPlayOnce,
                         true, false,false, Color.parseColor("#6495ED"),
                         Color.parseColor("#ffffff"), Color.parseColor("#ffffff"));
-                Preferences.savePlayMode(playModeEnum.value());
+                Preferences.saveVideoPlayMode(playModeEnum.value());
             }
         });
         repeatOne.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                playModeEnum=PlayModeEnum.valueOf(2);
+                playModeEnum=VideoPlayModeEnum.valueOf(1);
                 repeatSelect(ivRepeatList, ivRepeatOne,ivPlayOnce, tvRepeatList, tvRepeatOne,tvPlayOnce,
                         false, true,false,Color.parseColor("#ffffff"),
                         Color.parseColor("#6495ED"),Color.parseColor("#ffffff"));
-                Preferences.savePlayMode(playModeEnum.value());
+                Preferences.saveVideoPlayMode(playModeEnum.value());
             }
         });
 
         playListOnce.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                playModeEnum=PlayModeEnum.valueOf(3);
+                playModeEnum=VideoPlayModeEnum.valueOf(2);
                 repeatSelect(ivRepeatList, ivRepeatOne,ivPlayOnce, tvRepeatList, tvRepeatOne,tvPlayOnce,
                         false, false,true,Color.parseColor("#ffffff"),
                         Color.parseColor("#ffffff"),Color.parseColor("#6495ED"));
-                Preferences.savePlayMode(playModeEnum.value());
+                Preferences.saveVideoPlayMode(playModeEnum.value());
             }
         });
 

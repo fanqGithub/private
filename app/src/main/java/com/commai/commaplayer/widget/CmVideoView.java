@@ -62,51 +62,53 @@ public class CmVideoView extends VideoView{
             Log.e("----->" + "VideoView", "setVideoPath:" + e.toString());
         }
         scale = (float) videoRealH / (float) videoRealW;
-        Log.e("----->" + "VideoViewScale:", scale+"");
+        Log.e("----->" + "VideoViewScale:", scale + "");
+
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         int width = getDefaultSize(0, widthMeasureSpec);
         int height = getDefaultSize(0, heightMeasureSpec);
-        Log.d("设备方向的宽高：",width+":"+height);
-        Log.i("设原视频的宽高：",videoRealW+":"+videoRealH);
-        if(height>width){
-            //资源竖屏
-            if(videoRealH>videoRealW){
-                //如果视频资源是竖屏
-                //占满屏幕
-                mVideoHeight=height;
-                mVideoWidth=width;
-            }else {
-                //如果视频资源是横屏
-                //宽度占满，高度比例
-                mVideoWidth=width;
-                float r=videoRealH/(float)videoRealW;
-                mVideoHeight= (int) (mVideoWidth*r);
-            }
-        }else {
-            //横屏
-            if(videoRealH>videoRealW){
-                //如果视频资源是竖屏
-                //高度占满，宽度比例
-                mVideoHeight=height;
-                float r=videoRealW/(float)videoRealH;
-                mVideoWidth= (int) (mVideoHeight*r);
-            }else {
-                //如果视频资源是横屏
-                mVideoHeight=height;
-                //占满屏幕
-                mVideoWidth=width;
-            }
-        }
-        if(videoRealH==videoRealW&&videoRealH==1){
-            //没能获取到视频真实的宽高，自适应就可以了，什么也不用做
-            super.onMeasure(widthMeasureSpec,heightMeasureSpec);
-        }else {
-            Log.i("设调整的宽高：",mVideoWidth+":"+mVideoHeight);
-            setMeasuredDimension(mVideoWidth, mVideoHeight);
-        }
+        setMeasuredDimension(width,height);
+//        Log.d("设备方向的宽高：",width+":"+height);
+//        Log.i("设原视频的宽高：",videoRealW+":"+videoRealH);
+//        if(height>width){
+//            //资源竖屏
+//            if(videoRealH>videoRealW){
+//                //如果视频资源是竖屏
+//                //占满屏幕
+//                mVideoHeight=height;
+//                mVideoWidth=width;
+//            }else {
+//                //如果视频资源是横屏
+//                //宽度占满，高度比例
+//                mVideoWidth=width;
+//                float r=videoRealH/(float)videoRealW;
+//                mVideoHeight= (int) (mVideoWidth*r);
+//            }
+//        }else {
+//            //横屏
+//            if(videoRealH>videoRealW){
+//                //如果视频资源是竖屏
+//                //高度占满，宽度比例
+//                mVideoHeight=height;
+//                float r=videoRealW/(float)videoRealH;
+//                mVideoWidth= (int) (mVideoHeight*r);
+//            }else {
+//                //如果视频资源是横屏
+//                mVideoHeight=height;
+//                //占满屏幕
+//                mVideoWidth=width;
+//            }
+//        }
+//        if(videoRealH==videoRealW&&videoRealH==1){
+//            //没能获取到视频真实的宽高，自适应就可以了，什么也不用做
+//            super.onMeasure(widthMeasureSpec,heightMeasureSpec);
+//        }else {
+//            Log.i("设调整的宽高：",mVideoWidth+":"+mVideoHeight);
+//            setMeasuredDimension(mVideoWidth, mVideoHeight);
+//        }
 //        requestLayout();
     }
     @Override

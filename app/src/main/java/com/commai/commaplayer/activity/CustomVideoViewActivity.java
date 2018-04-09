@@ -7,7 +7,9 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
+import android.support.annotation.StringDef;
 import android.text.TextUtils;
 import android.util.Pair;
 import android.view.MotionEvent;
@@ -24,6 +26,12 @@ import android.widget.VideoView;
 
 import com.commai.commaplayer.R;
 import com.commai.commaplayer.base.BaseActivity;
+import com.commai.commaplayer.shareprefrence.Preferences;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -72,6 +80,14 @@ public class CustomVideoViewActivity extends BaseActivity implements View.OnClic
     private Handler showCotrollHandler;
 
     private String totalVideoTime="";
+
+    private static final int LOOP=0;
+    private static final int SINGLE=1;
+
+    @IntDef({LOOP,SINGLE})
+    @Target(ElementType.PARAMETER)
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface Mode{}
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
