@@ -33,9 +33,11 @@ import com.commai.commaplayer.Entity.AudioItem;
 import com.commai.commaplayer.Entity.RecentPlay;
 import com.commai.commaplayer.Entity.SelectedMediaItem;
 import com.commai.commaplayer.Entity.VideoItem;
+import com.commai.commaplayer.activity.NetSearchWordsActivity;
 import com.commai.commaplayer.adapter.AddPlayListAdapter;
 import com.commai.commaplayer.fragment.LocalMusicFragment;
 import com.commai.commaplayer.fragment.LocalVideoFragment;
+import com.commai.commaplayer.fragment.MusicFragment;
 import com.commai.commaplayer.fragment.PlayingFragment;
 import com.commai.commaplayer.fragment.SelfPlayListFragment;
 import com.commai.commaplayer.greendao.bean.PlayListBean;
@@ -65,7 +67,8 @@ public class MainActivity extends AppCompatActivity implements
         View.OnClickListener,OnPlayerEventListener{
 
     private SegmentControl segment_ct;
-    private LocalMusicFragment musicFragment=null;
+    private MusicFragment mMainMusicFragment=null;
+//    private LocalMusicFragment musicFragment=null;
     private LocalVideoFragment videoFragment=null;
     private SelfPlayListFragment selfPlayListFragment=null;
     private ControlViewPager mVp;
@@ -109,6 +112,9 @@ public class MainActivity extends AppCompatActivity implements
     private AllPlayLists allPlayLists;
     private Gson gson;
 
+    //检索在线音乐
+    private ImageView mBarSearch;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -130,6 +136,7 @@ public class MainActivity extends AppCompatActivity implements
         tvAddPlayList=findViewById(R.id.tv_add_play_list);
         tvCancel=findViewById(R.id.cancel_choose);
 
+        mBarSearch=findViewById(R.id.bar_search);
         gson=new Gson();
         allPlayLists=new AllPlayLists();
 
@@ -139,9 +146,12 @@ public class MainActivity extends AppCompatActivity implements
 
         imageLoader=new ImageLoader(this);
         initMediaData();
-        if (musicFragment==null){
-            musicFragment=new LocalMusicFragment();
+        if (mMainMusicFragment==null){
+            mMainMusicFragment=new MusicFragment();
         }
+//        if (musicFragment==null){
+//            musicFragment=new LocalMusicFragment();
+//        }
         if (videoFragment==null) {
             videoFragment = new LocalVideoFragment();
         }
@@ -150,7 +160,8 @@ public class MainActivity extends AppCompatActivity implements
         }
         initCallBack();
         myPageAdapter=new MyPageAdapter(getSupportFragmentManager());
-        myPageAdapter.addFragment(musicFragment);
+        myPageAdapter.addFragment(mMainMusicFragment);
+//        myPageAdapter.addFragment(musicFragment);
         myPageAdapter.addFragment(videoFragment);
         myPageAdapter.addFragment(selfPlayListFragment);
         mVp.setAdapter(myPageAdapter);
@@ -183,6 +194,7 @@ public class MainActivity extends AppCompatActivity implements
         playerNextMusic.setOnClickListener(this);
         tvAddPlayList.setOnClickListener(this);
         tvCancel.setOnClickListener(this);
+        mBarSearch.setOnClickListener(this);
     }
 
     private void bindService() {
@@ -268,9 +280,14 @@ public class MainActivity extends AppCompatActivity implements
             case R.id.cancel_choose:
                 if (videoFragment.isMutiableCheckShow){
                     resetVideoView();
-                }else if (musicFragment.isMutiableCheckShow){
+                }else if (mMainMusicFragment.localMusicFragment.isMutiableCheckShow){
                     resetView();
                 }
+                break;
+            case R.id.bar_search:
+                final Intent intent = new Intent(MainActivity.this, NetSearchWordsActivity.class);
+                MainActivity.this.startActivity(intent);
+                overridePendingTransition(0, 0);
                 break;
             default:
                 break;
@@ -301,7 +318,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void initCallBack(){
-        musicFragment.setOnMusicClickCallBackListener(new LocalMusicFragment.onMusicClickCallBackListener() {
+        mMainMusicFragment.localMusicFragment.setOnMusicClickCallBackListener(new LocalMusicFragment.onMusicClickCallBackListener() {
             @Override
             public void onMusicClickCallBack(int position) {
                 currentPlayingMusic=audioItemList.get(position);
@@ -476,7 +493,7 @@ public class MainActivity extends AppCompatActivity implements
         Toast.makeText(MainActivity.this,"已添加至"+playListName+"列表中",Toast.LENGTH_SHORT).show();
         if (videoFragment.isMutiableCheckShow){
             resetVideoView();
-        }else if (musicFragment.isMutiableCheckShow){
+        }else if (mMainMusicFragment.localMusicFragment.isMutiableCheckShow){
             resetView();
         }
     }
@@ -488,7 +505,7 @@ public class MainActivity extends AppCompatActivity implements
             hidePlayingFragment();
             return;
         }
-        if (musicFragment!=null&&musicFragment.isMutiableCheckShow){
+        if (mMainMusicFragment.localMusicFragment!=null&&mMainMusicFragment.localMusicFragment.isMutiableCheckShow){
             resetView();
             return;
         }
@@ -504,7 +521,7 @@ public class MainActivity extends AppCompatActivity implements
      * 重置头部和底部的视图
      */
     private void resetView(){
-        musicFragment.onKeyBackPress();
+        mMainMusicFragment.localMusicFragment.onKeyBackPress();
         clearSelectedItem();
     }
 

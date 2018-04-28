@@ -373,7 +373,7 @@ public class CmVideoViewActivity extends BaseActivity implements View.OnClickLis
                 repeatSelect(ivRepeatList, ivRepeatOne,ivPlayOnce,tvRepeatList, tvRepeatOne,tvPlayOnce,
                         true, false,false, Color.parseColor("#6495ED"),
                         Color.parseColor("#ffffff"), Color.parseColor("#ffffff"));
-                Preferences.saveVideoPlayMode(playModeEnum.value());
+                Preferences.savePlayMode(playModeEnum.value());
             }
         });
         repeatOne.setOnClickListener(new View.OnClickListener() {
@@ -383,7 +383,7 @@ public class CmVideoViewActivity extends BaseActivity implements View.OnClickLis
                 repeatSelect(ivRepeatList, ivRepeatOne,ivPlayOnce, tvRepeatList, tvRepeatOne,tvPlayOnce,
                         false, true,false,Color.parseColor("#ffffff"),
                         Color.parseColor("#6495ED"),Color.parseColor("#ffffff"));
-                Preferences.saveVideoPlayMode(playModeEnum.value());
+                Preferences.savePlayMode(playModeEnum.value());
             }
         });
 
@@ -394,7 +394,7 @@ public class CmVideoViewActivity extends BaseActivity implements View.OnClickLis
                 repeatSelect(ivRepeatList, ivRepeatOne,ivPlayOnce, tvRepeatList, tvRepeatOne,tvPlayOnce,
                         false, false,true,Color.parseColor("#ffffff"),
                         Color.parseColor("#ffffff"),Color.parseColor("#6495ED"));
-                Preferences.saveVideoPlayMode(playModeEnum.value());
+                Preferences.savePlayMode(playModeEnum.value());
             }
         });
 

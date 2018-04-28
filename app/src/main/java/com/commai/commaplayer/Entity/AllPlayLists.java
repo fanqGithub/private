@@ -18,4 +18,7 @@ public class AllPlayLists {
     public void setSelectedList(List<SelectedMediaItem> selectedList) {
         this.selectedList = selectedList;
     }
+
+
+
 }

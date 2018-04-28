@@ -74,4 +74,6 @@
     <string name="setting_key_sound_effect">sound_effect</string>
     <string name="setting_key_filter_size">filter_size</string>
     <string name="setting_key_filter_time">filter_time</string>
+    <string name="search">搜索</string>
+    <string name="search_net_music">搜索音乐、歌手、歌词...</string>
 </resources>

@@ -33,6 +33,7 @@
         <activity android:name=".activity.CustomVideoViewActivity"
             android:screenOrientation="landscape"/>
         <activity android:name=".activity.PlayListItemActivity" />
+        <activity android:name=".activity.NetSearchWordsActivity" />
 
         <service android:name=".service.MusicPlayService" />
 

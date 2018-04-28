@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <android.support.design.widget.TabLayout
+        android:id="@+id/music_main_tabs"
+        android:layout_width="match_parent"
+        android:layout_height="39dp"
+        android:tag="tab_indicator_accent_color,bg_primary_color"
+        app:tabTextColor="@color/bg_black"
+        app:tabSelectedTextColor="@color/colorblue"
+        app:tabIndicatorColor="@color/colorblue"/>
+
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/music_main_viewpager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+</LinearLayout>
