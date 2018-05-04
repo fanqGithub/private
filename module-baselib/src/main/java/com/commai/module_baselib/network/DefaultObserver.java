@@ -121,7 +121,7 @@ public abstract class DefaultObserver<T> implements Observer<T> {
     public void onException(ExceptionReason reason) {
         switch (reason) {
             case CONNECT_ERROR:
-                showTips("呀！网络异常！");
+                showTips("网络异常！");
                 break;
 
             case CONNECT_TIMEOUT:

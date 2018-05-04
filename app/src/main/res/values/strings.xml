@@ -75,5 +75,5 @@
     <string name="setting_key_filter_size">filter_size</string>
     <string name="setting_key_filter_time">filter_time</string>
     <string name="search">搜索</string>
-    <string name="search_net_music">搜索音乐、歌手、歌词...</string>
+    <string name="search_net_music">搜索网络音乐、歌手、歌词...</string>
 </resources>

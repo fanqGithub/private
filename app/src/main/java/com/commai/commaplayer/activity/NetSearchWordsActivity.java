@@ -137,6 +137,9 @@ public class NetSearchWordsActivity extends AppCompatActivity implements SearchV
         if (query.equals(queryString)) {
             return true;
         }
+        if (songsBeanList!=null){
+            songsBeanList.clear();
+        }
         queryString = query;
         if (!queryString.trim().equals("")) {
             ApiMethod.searchMusic(queryString, 1, 1, new DefaultObserver<SearchMusicResponse>(this) {
